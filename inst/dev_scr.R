@@ -77,4 +77,5 @@ Sys.setenv(RCPP_VERBOSE = 1)
 Rcpp::compileAttributes()
 
 devtools::build()
+devtools::check()
 devtools::install()

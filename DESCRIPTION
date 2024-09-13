@@ -2,12 +2,12 @@ Package: gSoup
 Type: Package
 Title: Analysis of population genetics and molecular evolution
 Version: 0.9.900
-Date: 2024-04-30
+Date: 2024-09-11
 Authors@R: c(person(given="Piyal",family="Karunarathne", email="piyalkarumail@yahoo.com", role = c("aut", "cre"),comment = c(ORCID = "0000-0002-1934-145X")))
 Maintainer: Piyal Karunarathne <piyalkarumail@yahoo.com>
 Description: I wrote this package to all bioinformatic tools in one place because I was tired of having to switch between different platforms to perform basic (and advance) population genetics and molecular evolution analyses.
 License: AGPL (>= 3)
-Imports: Rcpp
+Imports: Rcpp, Biostrings, ape, seqinr, methods, stringr, stats, utils
 LinkingTo: Rcpp
 Encoding: UTF-8
 LazyData: true
@@ -17,7 +17,7 @@ Depends:
 Suggests: 
     rmarkdown,
     knitr,
-    testthat (>= 3.0.0),
+    testthat (>= 4.0.0),
     covr
 ##VignetteBuilder: knitr
 Config/testthat/edition: 3
