@@ -1,3 +1,4 @@
+
 #function to remove gaps
 rm_gaps<-function(fast_path,ref,export.fasta=TRUE){
   if(is.character(fast_path)){h1<-readDNAStringSet(fast_path)} else {h1<-fast_path}
@@ -18,7 +19,7 @@ pairwise_length<-function(msa_path){
   library(ape)
   alg<-readDNAStringSet(msa_path)
   alg_bin<-ape::as.DNAbin(as.matrix(alg))
-  
+
   aln_length<-function(x){
     alignment<-alg_bin[c(x[1],x[2]),]
     for(i in 1:2){
@@ -72,10 +73,10 @@ gb2sense<-function(gb_file,path=NULL,annotation=TRUE,fasta_out=NULL,annotation_o
     outheader <- sprintf(">%s %d bp", seqname, seqsize)
     # get the dna sequence
     debut <- which(substring(input, 1, 6) == "ORIGIN") + 1
-    if (length(debut) > 1) 
+    if (length(debut) > 1)
       stop("There are more than one DNA sequence !")
     fin <- which(substring(input, 1, 2) == "//") - 1
-    if (length(fin) > 1) 
+    if (length(fin) > 1)
       stop("There are more than one DNA sequence !")
     dna <- input[debut:fin]
     all_char<-str_flatten(dna)
@@ -110,7 +111,7 @@ gb2sense<-function(gb_file,path=NULL,annotation=TRUE,fasta_out=NULL,annotation_o
       }
       ann_feat<-ann_feat[order(ann_feat$start),]
     } else {ann_feat<-NA}
-    
+
     if(DNAstringSet){
       dnaseq<-Biostrings::DNAStringSet(all_char)
       names(dnaseq)<-outheader
@@ -128,7 +129,7 @@ gb2sense<-function(gb_file,path=NULL,annotation=TRUE,fasta_out=NULL,annotation_o
       return(ann_feat)
     }
   }
-  
+
   if(is.null(path)){
     if(is.null(fasta_out) & !DNAstringSet){message("No fasta_out path provided \n saving to the working directory")
       fasta_out<-paste0(getwd(),"/",gsub(".gb*","",basename(gb_file)),".fasta")}
@@ -137,7 +138,7 @@ gb2sense<-function(gb_file,path=NULL,annotation=TRUE,fasta_out=NULL,annotation_o
     return(out)
   } else {
     all_gbs<-list.files(path,full.names = TRUE,pattern="\\.gb*")
-    
+
     if(!separate_fasta){
       if(is.null(fasta_out) & !DNAstringSet){
         message("No fasta_out path provided \n saving to the working directory")
@@ -158,7 +159,7 @@ gb2sense<-function(gb_file,path=NULL,annotation=TRUE,fasta_out=NULL,annotation_o
     ifelse(DNAstringSet,return(list(fasta=dnastring,annotation=annotation_table)),return(annotation_table))
   }
 }
-#examples how to run 
+#examples how to run
 # test_ann<-gb2sense(path = "/Users/piyalkaru/Desktop/DDORF/Ann/HMA4/seqs/Ahal/gbs_for_Piyal_from_YS/python_merge/test",DNAstringSet = T,separate_fasta = T)
 # test_ann<-gb2sense(gb_file = "/Users/piyalkaru/Desktop/DDORF/Ann/HMA4/seqs/Ahal/gbs_for_Piyal_from_YS/python_merge/Lan5_HMA4-1.gb",DNAstringSet = T,separate_fasta = T)
 
@@ -183,12 +184,12 @@ GeneAnno<-function(an.tab,genes=NULL,scale=c("mb","kb"),orient=c("horizontal","v
   opars<-par("mar")
   on.exit(par(mar=opars))
   orient<-match.arg(orient)
-  
+
   an.tab<-data.frame(an.tab)
   if(!is.null(genes)){nsp<-length(genes)}else{nsp<-1} # this is to be used for multiple genes with a loop [later]
   ann.width<-ann.width/20
   xrange<-nsp*0.1
-  
+
   # axis tic labels
   if(up_down_stream){
     coords<-an.tab[,c("start","end")]
@@ -200,7 +201,7 @@ GeneAnno<-function(an.tab,genes=NULL,scale=c("mb","kb"),orient=c("horizontal","v
     all_gstart<-min(as.numeric(an.tab[an.tab$type=="exon","start"]))
     all_gend<-max(as.numeric(an.tab[an.tab$type=="exon","end"]))
   }
-  
+
   for(g in 1:nsp){
     if(!is.null(genes)){g_coords<-an.tab[grep(genes[g],an.tab[,gname.col]),]} else {g_coords<-an.tab}
     g_coords<-g_coords[!duplicated(g_coords[,c("type","start","end")]),]
@@ -228,26 +229,26 @@ GeneAnno<-function(an.tab,genes=NULL,scale=c("mb","kb"),orient=c("horizontal","v
     } else {
       cds<-data.frame(g_coords[g_coords$type=="exon" ,c("type","start","end")])
     }
-    
+
     denom<-ifelse(scale=="mb",1000000,1000)
     tx<-paste0(trunc((lns/denom)*denom)/denom, paste0("\n",scale))
-    
+
     # draw vertically
     if(orient=="vertical"){
       if(g==1){
         if(label){par(mar=c(10.1,ifelse(draw.axis,4.1,0.1),1.1,0.1))} else if(ll$main==""){par(mar=c(1.1,ifelse(draw.axis,3.1,2.1),2.1,1.1))}
         if(up_down_stream){ylm<-c(min(coords)-100,max(coords)+100)} else {ylm<-c(all_gstart-3,all_gend+3)}
-        plot(0,ylim=ylm,xlim=c(0,xrange+ifelse(nsp>1,0.2,0)),axes=F,xlab=NA,ylab=NA,bty="n",type="n",main=ll$main) 
+        plot(0,ylim=ylm,xlim=c(0,xrange+ifelse(nsp>1,0.2,0)),axes=F,xlab=NA,ylab=NA,bty="n",type="n",main=ll$main)
         if(draw.axis){
           axis(2,at=lns,labels = F)
           mtext(tx,2,at=lns, cex=0.7, adj=1.18,las=2)
         }
       }
-      
+
       if(nsp>1)(g_pos<-xrange/nsp*g) else g_pos<-xrange/2 # placement of the gene in the plot
       if(up_down_stream){abline(v=g_pos,lwd=3)} else {lines(x=c(g_pos,g_pos),y=c(gstart+50,gend-50),lwd=3)}
       if(label){mtext(ifelse(is.null(genes),ll$labels,genes[g]),side=1,at=g_pos,cex=0.7,font = 3,las=3,line=ifelse(up_down_stream,0.5,0))}
-      
+
       for(i in 1:nrow(cds)){
         ty<-cds[i,1]
         if(ty=="intron"){
@@ -257,19 +258,19 @@ GeneAnno<-function(an.tab,genes=NULL,scale=c("mb","kb"),orient=c("horizontal","v
           a<-cds[i,2:3]
           is_within5 <- start_codon >= min(a) && start_codon <= max(a)
           is_within3 <- stop_codon >= min(a) && stop_codon <= max(a)
-          
+
           if(!is_within3 & !is_within5){
             crd<-create_arrow_polygon(start=cds[i,2],end=cds[i,3],mid.pos=g_pos,width = ann.width,axis = "y")
             polygon(crd,col=ifelse(cds[i,2]<=start_codon | cds[i,3]>=stop_codon,ll$col[3],ll$col[1]))
           }
-          
+
           if(is_within5){
             crd<-create_arrow_polygon(start=start_codon,end=cds[i,3],mid.pos=g_pos,width = ann.width,axis = "y",arrow_head_length = 0.4)
             polygon(crd,col=ll$col[1],border = 1)
             y=g_pos;width = ann.width
             polygon(y=c(cds[i,2],cds[i,2],start_codon,start_codon),x=c(y-width,y+width,y+width,y-width),col=ll$col[3],border = 1)
           }
-          
+
           if(is_within3){
             crd<-create_arrow_polygon(start=stop_codon,end=cds[i,3],mid.pos=g_pos,width = ann.width,axis = "y",arrow_head_length = 0.8)
             polygon(crd,col=ll$col[3],border = 1)
@@ -284,17 +285,17 @@ GeneAnno<-function(an.tab,genes=NULL,scale=c("mb","kb"),orient=c("horizontal","v
       if(g==1){
         if(label){par(mar=c(ifelse(draw.axis,5.1,0.1),10.1,0.1,1.1))} else if(ll$main==""){par(mar=c(ifelse(draw.axis,2.1,1.1),3.1,2.1,1.1))}
         if(up_down_stream){xlm<-c(min(coords)-100,max(coords)+100)} else {xlm<-c(all_gstart-3,all_gend+3)}
-        plot(0,xlim=xlm,ylim=c(0,xrange+ifelse(nsp>1,0.2,0)),axes=F,xlab=NA,ylab=NA,bty="n",type="n",main=ll$main) 
+        plot(0,xlim=xlm,ylim=c(0,xrange+ifelse(nsp>1,0.2,0)),axes=F,xlab=NA,ylab=NA,bty="n",type="n",main=ll$main)
         if(draw.axis){
           axis(1,at=lns,labels = F)
           mtext(tx,1,at=lns, cex=0.7, adj=1.18,las=2)
         }
       }
-      
+
       if(nsp>1)(g_pos<-xrange/nsp*g) else g_pos<-xrange/2 # placement of the gene in the plot
       if(up_down_stream){abline(h=g_pos,lwd=3)} else {lines(y=c(g_pos,g_pos),x=c(gstart+50,gend-50),lwd=3)}
-      if(label){mtext(ifelse(is.null(genes),ll$labels,genes[g]),side=2,at=g_pos,cex=0.7,font = 3,las=1,line=ifelse(up_down_stream,0.5,0))} # add the label on the y axis 
-      
+      if(label){mtext(ifelse(is.null(genes),ll$labels,genes[g]),side=2,at=g_pos,cex=0.7,font = 3,las=1,line=ifelse(up_down_stream,0.5,0))} # add the label on the y axis
+
       for(i in 1:nrow(cds)){
         ty<-cds[i,1]
         if(ty=="intron"){
@@ -304,19 +305,19 @@ GeneAnno<-function(an.tab,genes=NULL,scale=c("mb","kb"),orient=c("horizontal","v
           a<-cds[i,2:3]
           is_within5 <- start_codon >= min(a) && start_codon <= max(a)
           is_within3 <- stop_codon >= min(a) && stop_codon <= max(a)
-          
+
           if(!is_within3 & !is_within5){
             crd<-create_arrow_polygon(start=cds[i,2],end=cds[i,3],mid.pos=g_pos,width = ann.width)
             polygon(crd,col=ifelse(cds[i,2]<=start_codon | cds[i,3]>=stop_codon,ll$col[3],ll$col[1]))
           }
-          
+
           if(is_within5){
             crd<-create_arrow_polygon(start=start_codon,end=cds[i,3],mid.pos=g_pos,width = ann.width,arrow_head_length = 0.4)
             polygon(crd,col=ll$col[1],border = 1)
             y=g_pos;width = ann.width
             polygon(x=c(cds[i,2],cds[i,2],start_codon,start_codon),y=c(y-width,y+width,y+width,y-width),col=ll$col[3],border = 1)
           }
-          
+
           if(is_within3){
             crd<-create_arrow_polygon(start=stop_codon,end=cds[i,3],mid.pos=g_pos,width = ann.width,arrow_head_length = 0.8)
             polygon(crd,col=ll$col[3],border = 1)
@@ -332,29 +333,29 @@ GeneAnno<-function(an.tab,genes=NULL,scale=c("mb","kb"),orient=c("horizontal","v
 
 GeneAnno0<-function(an.tab,genes=NULL,type=c("CDS","exon"),scale=c("mb","kb"),orient=c("horizontal","vertical"),gname.col="seq",...){
   ll<-list(...)
-  
+
   an.tab<-data.frame(an.tab)
   if(!is.null(genes)){g_coords<-an.tab[grep(genes,an.tab[,gname.col]),]} else {g_coords<-an.tab}
   g_coords<-g_coords[!duplicated(g_coords[,c("type","start","end")]),]
   if(!is.null(genes)){nsp<-length(genes)}else{nsp<-1}
   type<-match.arg(type)
-  
+
   xrange<-nsp*0.2
   coords<-g_coords[,c("start","end")]
-  
+
   lns<-seq(range(coords)[1],range(coords)[2],length.out=10)
   denom<-ifelse(scale=="mb",1000000,1000)
   tx<-paste0(trunc((lns/denom)*denom)/denom, paste0("\n",scale))
-  
+
   if(orient=="vertical"){
-    plot(0,ylim=c(min(coords)-100,max(coords)+100),xlim=c(0,xrange),axes=F,xlab=NA,ylab=NA,bty="n",type="n",main=paste0(ll$main," ",type)) 
+    plot(0,ylim=c(min(coords)-100,max(coords)+100),xlim=c(0,xrange),axes=F,xlab=NA,ylab=NA,bty="n",type="n",main=paste0(ll$main," ",type))
     axis(2,at=lns,labels = F)
     mtext(tx,2,at=lns, cex=0.7, adj=1.18,las=2)
     g_pos<-xrange/2
     abline(v=g_pos,lwd=3)
     gcoord<-unlist(g_coords[g_coords$type=="gene",4:5])
     rect(g_pos-0.02,min(gcoord),g_pos+0.02,max(gcoord),col="darkgrey",border = NA)
-    
+
     # plot CDS
     tm_cds<-g_coords[g_coords$type==type,]
     for(i in 1:nrow(tm_cds)){
@@ -362,16 +363,16 @@ GeneAnno0<-function(an.tab,genes=NULL,type=c("CDS","exon"),scale=c("mb","kb"),or
       rect(g_pos-0.05,min(gcoord_CDS),g_pos+0.05,max(gcoord_CDS),col="darkorange",border = "darkorange")
     }
   }
-  
+
   if(orient=="horizontal"){
-    plot(0,xlim=c(min(coords)-100,max(coords)+100),ylim=c(0,xrange),axes=F,xlab=NA,ylab=NA,bty="n",type="n",main=paste0(ll$main," ",type)) 
+    plot(0,xlim=c(min(coords)-100,max(coords)+100),ylim=c(0,xrange),axes=F,xlab=NA,ylab=NA,bty="n",type="n",main=paste0(ll$main," ",type))
     axis(1,at=lns,labels = F)
     mtext(tx,1,at=lns, cex=0.7, adj=1.18,las=2)
     g_pos<-xrange/2
     abline(h=g_pos,lwd=3)
     gcoord<-unlist(g_coords[g_coords$type=="gene",4:5])
     rect(min(gcoord),g_pos-0.02,max(gcoord),g_pos+0.02,col="darkgrey",border = NA)
-    
+
     # plot CDS
     tm_cds<-g_coords[g_coords$type==type,]
     for(i in 1:nrow(tm_cds)){
@@ -379,7 +380,7 @@ GeneAnno0<-function(an.tab,genes=NULL,type=c("CDS","exon"),scale=c("mb","kb"),or
       rect(min(gcoord_CDS),g_pos-0.05,max(gcoord_CDS),g_pos+0.05,col="darkorange",border = "darkorange")
     }
   }
-  
+
 }
 
 
@@ -432,7 +433,7 @@ pi_theta_plot<-function(Pi,annotation,anno.type=c("exon","CDS"),ratio=FALSE,log_
   if(is.null(ll$pch)){ll$pch<-c(NA,NA,NA,NA,15,21)}
   if(is.null(ll$main)){ll$main<-""}
   anno.type<-match.arg(anno.type)
-  
+
   smooth_pi<-zoo::rollmean(Pi$window$pi,1,fill = NA)
   smooth_theta<-zoo::rollmean(Pi$window$theta_w,1,fill = NA)
   if(log_scale){
@@ -446,7 +447,7 @@ pi_theta_plot<-function(Pi,annotation,anno.type=c("exon","CDS"),ratio=FALSE,log_
   rat2[is.infinite(rat)]<-0
   mins<-min(rat[!is.infinite(rat)]);maxs<-max(rat[!is.infinite(rat)])
   abl_cds<-data.frame(annotation[annotation$type==anno.type,c("start","end")])
-  
+
   if(ratio){
     layout_matrix <- matrix(c(1, 2), nrow = 2, ncol = 1, byrow = TRUE)
     # Set the heights for the two rows (1/3 for the top, 2/3 for the bottom)
@@ -460,9 +461,9 @@ pi_theta_plot<-function(Pi,annotation,anno.type=c("exon","CDS"),ratio=FALSE,log_
     mtext(expression("log2(" ~ pi / theta ~ ")"), side = 2, line = 3,cex=0.7)
     abline(h=rat_mean,lty=3,lwd=2,col=ll$col[4])
     #legend("topright",lty=2,lwd=2,col="grey20",bg="grey90",legend = "Mean ratio",cex=0.8,box.lwd = 0)
-    
+
   }
-  
+
   if(is.null(ann.width)){ann.width<-max(na.omit(c(smooth_pi,smooth_theta)))/50}
   if(is.null(mid.pos)){mid.pos<--(ann.width*3)}
   pi_pol<-pol_coords(smooth_pi)
@@ -475,39 +476,39 @@ pi_theta_plot<-function(Pi,annotation,anno.type=c("exon","CDS"),ratio=FALSE,log_
   polygon(pi_pol,col=cls[1],border = cls[1],lty=1)
   # polygon(theta_pol,col=cls[3],border=ll$col[3],lty=4)
   lines(smooth_theta,col=ll$col[2],lty=1,lwd=2)
-  
+
   if(ratio){ legend("bottomright", lty=ll$lty,pch = ll$pch,col = ll$col,lwd=2,
                     legend = c(expression(pi),expression(theta[W]), expression(pi/theta[W]), expression("avg." ~ pi/theta[W]),"exon","UTR"),
                     xpd=T,horiz=TRUE, bty="n",inset=c(0,1),cex=0.8)}
-  
+
   # add gene annotation
   start_codon<-as.numeric(annotation[annotation$type=="start_codon","start"])
   stop_codon<-as.numeric(annotation[annotation$type=="stop_codon","end"])
-  
+
   if(intron){
     cds<-data.frame(annotation[annotation$type==anno.type | annotation$type=="intron",c("type","start","end")])
   } else {
     cds<-data.frame(annotation[annotation$type==anno.type ,c("type","start","end")])
   }
-  
+
   abline(h=mid.pos,lwd=2)
   for(i in 1:nrow(cds)){
     a<-cds[i,2:3]
     is_within5 <- start_codon >= min(a) && start_codon <= max(a)
     is_within3 <- stop_codon >= min(a) && stop_codon <= max(a)
-    
+
     if(!is_within3 & !is_within5){
       crd<-create_arrow_polygon(start=cds[i,2],end=cds[i,3],mid.pos=mid.pos,width = ann.width)
       polygon(crd,col=ifelse(cds[i,2]<=start_codon | cds[i,3]>=stop_codon,"white",ll$col[5]))
     }
-    
+
     if(is_within5){
       crd<-create_arrow_polygon(start=start_codon,end=cds[i,3],mid.pos=mid.pos,width = ann.width,arrow_head_length = 0.4)
       polygon(crd,col=ll$col[5],border = 1)
       y=mid.pos;width = ann.width
       polygon(x=c(cds[i,2],cds[i,2],start_codon,start_codon),y=c(y-width,y+width,y+width,y-width),col="white",border = 1)
     }
-    
+
     if(is_within3){
       crd<-create_arrow_polygon(start=stop_codon,end=cds[i,3],mid.pos=mid.pos,width = ann.width,arrow_head_length = 0.8)
       polygon(crd,col="white",border = 1)
@@ -517,8 +518,8 @@ pi_theta_plot<-function(Pi,annotation,anno.type=c("exon","CDS"),ratio=FALSE,log_
   }
   # Use bquote to create the expression with Greek letters and numeric values
   title(sub = bquote(
-    pi[avg] == .(round(Pi$average$pi, 3)) ~ "; " ~ 
-      theta[avg] == .(round(Pi$average$theta, 3)) ~ "; " ~ 
+    pi[avg] == .(round(Pi$average$pi, 3)) ~ "; " ~
+      theta[avg] == .(round(Pi$average$theta, 3)) ~ "; " ~
       pi[avg]/theta[avg] == .(round(Pi$average$pi/Pi$average$theta,3))
   ), cex.sub = 1)
 }
@@ -535,7 +536,7 @@ piAS_rat_plot<-function(pis,annotation,anno.type=c("CDS","exon"),ratio=FALSE,log
   if(is.null(ll$pch)){ll$pch<-c(NA,NA,NA,NA,15)}
   if(is.null(ll$main)){ll$main<-""}
   anno.type<-match.arg(anno.type)
-  
+
   smooth_A <- na.omit(zoo::rollmean(pis$pi_A, 1, fill = NA))
   smooth_S<-na.omit(zoo::rollmean(pis$pi_S,1,fill = NA))
   if(log_scale){
@@ -555,7 +556,7 @@ piAS_rat_plot<-function(pis,annotation,anno.type=c("CDS","exon"),ratio=FALSE,log
   cds$new_s<-c(1,cds$cum_len[1:nrow(cds)-1])
   cds$new_e<-cds$cum_len+1
   abl_cds<-data.frame(cds[,c("new_s","new_e")])
-  
+
   if(ratio){
     layout_matrix <- matrix(c(1, 2), nrow = 2, ncol = 1, byrow = TRUE)
     # Set the heights for the two rows (1/3 for the top, 2/3 for the bottom)
@@ -568,14 +569,14 @@ piAS_rat_plot<-function(pis,annotation,anno.type=c("CDS","exon"),ratio=FALSE,log
     mtext(expression("log2(" ~ pi[A] / pi[S] ~ ")" ), side = 2, line = 3,cex=0.7)
     abline(h=rat_mean, col="grey20",lty=3,lwd=1.5)
   }
-  
+
   A_pol<-pol_coords(smooth_A)
   S_pol<-pol_coords(smooth_S)
-  
+
   mins<-min(c(smooth_A,smooth_S));maxs<-max(c(smooth_A,smooth_S))
   if(is.null(ann.width)){ann.width<-max(na.omit(c(smooth_A,smooth_S)))/50}
   if(is.null(mid.pos)){mid.pos<--(ann.width*3)}
-  
+
   cls<-rCNV:::makeTransparent(ll$col[1:3],alpha=0.6)
   if(ratio){par(mar=c(6.1 ,5.1 ,2.1 ,2.1))}else{par(mar=c(6.1 ,4.1 ,4.1 ,2.1))}
   plot(smooth_A,type="n",lwd=2,ylab=expression(pi[A] ~ "," ~ pi[S]),main=ifelse(ratio,"",ll$main),
@@ -583,11 +584,11 @@ piAS_rat_plot<-function(pis,annotation,anno.type=c("CDS","exon"),ratio=FALSE,log
   rect(xleft=abl_cds[,1],ybottom = mid.pos,xright = abl_cds[,2],ytop = maxs,col="grey95",border="grey80")
   polygon(S_pol,col=cls[3],border=ll$col[3],lty=1)
   polygon(A_pol,col=cls[2],border=ll$col[2],lty=1)
-  
+
   legend("bottomright", lty=ll$lty,pch = ll$pch,col = ll$col[c(2,3,4,7,6)],lwd=2,
          legend = c(expression(pi[A]),expression(pi[S]), expression(pi[A]/pi[S]),expression("avg." ~ pi[A]/pi[S]), "CDS"),
          xpd=T,horiz=TRUE, bty="n",inset=c(0,1),cex=0.8)
-  
+
   # add gene annotation
   abline(h=mid.pos,lwd=2)
   for(i in 1:nrow(cds)){
@@ -596,7 +597,7 @@ piAS_rat_plot<-function(pis,annotation,anno.type=c("CDS","exon"),ratio=FALSE,log
   }
   # Use bquote to create the expression with Greek letters and numeric values
   title(sub = bquote(
-    pi[A] == .(round(pis$avg_nsy, 3)) ~ "; " ~ 
+    pi[A] == .(round(pis$avg_nsy, 3)) ~ "; " ~
       pi[S] == .(round(pis$avg_sy, 3)) ~ "; " ~
       pi[A]/pi[S] == .(round(pis$avg_nsy/pis$avg_sy,3))
   ), cex.sub = 1)
@@ -614,14 +615,14 @@ plot_piAS<-function(Pi,pis,annotation,anno.type=c("CDS","exon"),theta=FALSE,rati
   if(is.null(ll$lty)){ll$lty<-c(3,1,4,2,NA,NA)}
   if(is.null(ll$pch)){ll$pch<-c(NA,NA,NA,NA,15,15)}
   if(is.null(ll$main)){ll$main<-""}
-  
-  
+
+
   smooth_pi<-zoo::rollmean(Pi$window$pi,1,fill = NA)
   smooth_A <- zoo::rollmean(pis$pi_A, 1, fill = NA)
   smooth_S<-zoo::rollmean(pis$pi_S,1,fill = NA)
   rat<-log2(smooth_A/smooth_S)
   rat[is.na(rat)]<-0
-  
+
   if(ratio){
     layout_matrix <- matrix(c(1, 2), nrow = 2, ncol = 1, byrow = TRUE)
     # Set the heights for the two rows (1/3 for the top, 2/3 for the bottom)
@@ -630,29 +631,29 @@ plot_piAS<-function(Pi,pis,annotation,anno.type=c("CDS","exon"),theta=FALSE,rati
     par(mar = c(1, 4, 2, 2))  # Adjust margins for the smaller plot
     plot(rat, type = "l", col = 2,xaxt="n",xlab=NA,frame=F,ylab=expression(pi[A] / pi[S]),main=ll$main)
   }
-  
-  
+
+
   pi_pol<-pol_coords(smooth_pi)
   A_pol<-pol_coords(smooth_A)
   S_pol<-pol_coords(smooth_S)
-  
+
   cls<-rCNV:::makeTransparent(ll$col[1:3],alpha=0.6)
   if(ratio){par(mar=c(6.1 ,4.1 ,2.1 ,2.1))}else{par(mar=c(6.1 ,4.1 ,4.1 ,2.1))}
   plot(smooth_pi,type="n",lwd=2,ylab=expression(pi),main=ifelse(ratio,"",ll$main),ylim=c(-0.005,max(na.omit(c(
     smooth_pi,smooth_A,smooth_S)))),frame=F,xlim=c(0,length(smooth_pi)),xlab=NA)
-  
+
   polygon(pi_pol,col=cls[1],border = cls[1],lty=3)
   polygon(S_pol,col=cls[3],border=ll$col[3],lty=4)
   polygon(A_pol,col=cls[2],border=ll$col[2],lty=1)
-  
+
   if(theta){
     abline(h=Pi$average$theta,col=ll$col[4],lty=2,lwd=2)
     legend("bottomright", lty=ll$lty,pch = ll$pch,col = ll$col,lwd=2,legend = c(expression(pi),expression(pi[A]), expression(pi[S]), expression(theta[" (avg)"]),"exon","intron"),xpd=T,horiz=TRUE, bty="n",inset=c(0,1),cex=0.8)
   } else {legend("bottomright", lty=ll$lty[-4],pch = ll$pch[-4],col = ll$col[-4],lwd=2,legend = c(expression(pi),expression(pi[A]), expression(pi[S]), "exon","intron"),xpd=T,horiz=TRUE, bty="n",inset=c(0,1),cex=0.8)}
-  
+
   # legend("bottomright", st, col = makeTransparent(l$col,alpha=1), pch=l$pch,
   #        cex = 0.8,inset=c(0,1), xpd=TRUE, horiz=TRUE, bty="n")
-  
+
   # add gene annotation
   anno.type<-match.arg(anno.type)
   if(intron){
@@ -667,9 +668,9 @@ plot_piAS<-function(Pi,pis,annotation,anno.type=c("CDS","exon"),theta=FALSE,rati
   }
   # Use bquote to create the expression with Greek letters and numeric values
   title(sub = bquote(
-    pi[avg] == .(round(Pi$average$pi, 3)) ~ "; " ~ 
-      theta[avg] == .(round(Pi$average$theta, 3)) ~ "; " ~ 
-      pi[A] == .(round(pis$avg_nsy, 3)) ~ "; " ~ 
+    pi[avg] == .(round(Pi$average$pi, 3)) ~ "; " ~
+      theta[avg] == .(round(Pi$average$theta, 3)) ~ "; " ~
+      pi[A] == .(round(pis$avg_nsy, 3)) ~ "; " ~
       pi[S] == .(round(pis$avg_sy, 3)) ~ "; " ~
       pi[A]/pi[S] == .(round(pis$avg_nsy/pis$avg_sy,3))
   ), cex.sub = 1)
@@ -687,14 +688,14 @@ plot_piAS1<-function(Pi,pis,annotation,anno.type=c("CDS","exon"),theta=FALSE,rat
   if(is.null(ll$lty)){ll$lty<-c(3,1,4,2,NA,NA)}
   if(is.null(ll$pch)){ll$pch<-c(NA,NA,NA,NA,15,15)}
   if(is.null(ll$main)){ll$main<-""}
-  
-  
+
+
   smooth_pi<-zoo::rollmean(Pi$window$pi,1,fill = NA)
   smooth_A <- zoo::rollmean(pis$pi_A, 1, fill = NA)
   smooth_S<-zoo::rollmean(pis$pi_S,1,fill = NA)
   rat<-smooth_A/smooth_S
   rat[is.na(rat)]<-0
-  
+
   if(ratio){
     layout_matrix <- matrix(c(1, 2), nrow = 2, ncol = 1, byrow = TRUE)
     # Set the heights for the two rows (1/3 for the top, 2/3 for the bottom)
@@ -703,39 +704,39 @@ plot_piAS1<-function(Pi,pis,annotation,anno.type=c("CDS","exon"),theta=FALSE,rat
     par(mar = c(1, 4, 2, 2))  # Adjust margins for the smaller plot
     plot(rat, type = "l", col = 2,xaxt="n",xlab=NA,frame=F,ylab=expression(pi[A] / pi[S]),main=ll$main)
   }
-  
-  
+
+
   pi_pol<-pol_coords(smooth_pi)
   A_pol<-pol_coords(smooth_A)
   S_pol<-pol_coords(smooth_S)
-  
+
   cls<-rCNV:::makeTransparent(ll$col[1:3],alpha=0.6)
   if(ratio){par(mar=c(6.1 ,4.1 ,2.1 ,2.1))}else{par(mar=c(6.1 ,4.1 ,4.1 ,2.1))}
   plot(smooth_pi,type="n",lwd=2,ylab=expression(pi),main=ifelse(ratio,"",ll$main),ylim=c(-0.005,max(na.omit(c(
     smooth_pi,smooth_A,smooth_S)))),frame=F,xlim=c(0,length(smooth_pi)),xlab=NA)
-  
+
   polygon(pi_pol,col=cls[1],border = cls[1],lty=3)
   polygon(S_pol,col=cls[3],border=ll$col[3],lty=4)
   polygon(A_pol,col=cls[2],border=ll$col[2],lty=1)
-  
+
   if(theta){
     abline(h=Pi$average$theta,col=ll$col[4],lty=2,lwd=2)
     legend("bottomright", lty=ll$lty,pch = ll$pch,col = ll$col,lwd=2,legend = c(expression(pi),expression(pi[A]), expression(pi[S]), expression(theta[" (avg)"]),"exon","intron"),xpd=T,horiz=TRUE, bty="n",inset=c(0,1),cex=0.8)
   } else {legend("bottomright", lty=ll$lty[-4],pch = ll$pch[-4],col = ll$col[-4],lwd=2,legend = c(expression(pi),expression(pi[A]), expression(pi[S]), "exon","intron"),xpd=T,horiz=TRUE, bty="n",inset=c(0,1),cex=0.8)}
-  
+
   # add gene annotation
   anno.type<-match.arg(anno.type)
   cds<-data.frame(annotation[annotation$type==anno.type | annotation$type=="intron",c("type","start","end")])
   for(i in 1:nrow(cds)){
     crd<-create_arrow_polygon(start=cds[i,2],end=cds[i,3],y=-0.0025,width = ifelse(cds[i,1]=="CDS",0.001,0.001))
     polygon(crd,col=ifelse(cds[i,1]=="CDS" | cds[i,1]=="exon",ll$col[5],ll$col[6]))
-    
+
   }
   # Use bquote to create the expression with Greek letters and numeric values
   title(sub = bquote(
-    pi[avg] == .(round(Pi$average$pi, 3)) ~ "; " ~ 
-      theta[avg] == .(round(Pi$average$theta, 3)) ~ "; " ~ 
-      pi[A] == .(round(pis$avg_nsy, 3)) ~ "; " ~ 
+    pi[avg] == .(round(Pi$average$pi, 3)) ~ "; " ~
+      theta[avg] == .(round(Pi$average$theta, 3)) ~ "; " ~
+      pi[A] == .(round(pis$avg_nsy, 3)) ~ "; " ~
       pi[S] == .(round(pis$avg_sy, 3)) ~ "; " ~
       pi[A]/pi[S] == .(round(pis$avg_nsy/pis$avg_sy,3))
   ), cex.sub = 1)
@@ -746,7 +747,7 @@ plot_piAS0<-function(Pi,pis,annotation,main=""){
   smooth_pi<-zoo::rollmean(Pi$window$pi,1,fill = NA)
   smooth_A <- zoo::rollmean(pis$pi_A, 1, fill = NA)
   smooth_S<-zoo::rollmean(pis$pi_S,1,fill = NA)
-  
+
   plot(smooth_pi,type="l",col="darkolivegreen",lwd=2,ylab=expression(pi),main=main,ylim=c(-0.005,max(na.omit(c(
     smooth_pi,smooth_A,smooth_S)))),frame=F,xlim=c(0,length(smooth_pi)),xlab=NA)
   lines(smooth_A,col=2,lwd=2)
@@ -759,13 +760,13 @@ plot_piAS0<-function(Pi,pis,annotation,main=""){
   for(i in 1:nrow(cds)){
     crd<-create_arrow_polygon(start=cds[i,2],end=cds[i,3],y=-0.0025,width = ifelse(cds[i,1]=="CDS",0.001,0.001))
     polygon(crd,col=ifelse(cds[i,1]=="CDS","#FF6600","grey40"))
-    
+
   }
   # Use bquote to create the expression with Greek letters and numeric values
   title(sub = bquote(
-    pi[avg] == .(round(Pi$average$pi, 3)) ~ "; " ~ 
-      theta[avg] == .(round(Pi$average$theta, 3)) ~ "; " ~ 
-      pi[A] == .(round(pis$avg_nsy, 3)) ~ "; " ~ 
+    pi[avg] == .(round(Pi$average$pi, 3)) ~ "; " ~
+      theta[avg] == .(round(Pi$average$theta, 3)) ~ "; " ~
+      pi[A] == .(round(pis$avg_nsy, 3)) ~ "; " ~
       pi[S] == .(round(pis$avg_sy, 3)) ~ "; " ~
       pi[A]/pi[S] == .(round(pis$avg_nsy/pis$avg_sy,3))
   ), cex.sub = 1)
@@ -783,16 +784,16 @@ blast_plot<-function(blast_out,scale=c("mb","kb"),cols=c("stitle","sseqid","ssta
     yl<-length(chrs)*2
     xcoords<-gereg[,cols[3:4]]
     xl<-range(xcoords)
-    
+
     lns<-seq(xl[1]-500,xl[2]+500,length.out=10)
     denom<-ifelse(scale=="mb",1000000,1000)
     xrange<-seq((min(xcoords)),(max(xcoords)),length.out=10)
     tx<-paste0(trunc((xrange/denom)*denom)/denom, paste0(" ",scale))
-    
-    
+
+
     plot(0,ylim=c(0,yl),xlim=c(xl[1]-500,xl[2]+500),type="n",ylab="",xlab="",main=assembly[j],axes=FALSE,...)
     if(axes==FALSE){mtext(tx,1,at=lns, cex=0.7, adj=1.18,las=2)}
-    
+
     for(i in seq_along(chrs)){
       abline(h=(yl/i)-1)
       c_tmp0<-gereg[gereg[,cols[2]]==chrs[i],]
@@ -826,17 +827,17 @@ blast_plot0<-function(blast_out,scale=c("mb","kb"),cols=c("stitle","sseqid","sst
       xl<-c(xl,diff(range(unlist(xcoords[gereg[,cols[2]]==ch,])))+1000)
     }
     xl<-max(xl)
-    
+
     lns<-seq(500,xl-500,length.out=10)
     denom<-ifelse(scale=="mb",1000000,1000)
     xrange<-seq((min(xcoords)),(max(xcoords)),length.out=10)
     tx<-paste0(trunc((xrange/denom)*denom)/denom, paste0(" ",scale))
-    
+
     par(mar=c(5.1,6.1,4.1,2.1))
     plot(0,ylim=c(0,yl),xlim=c(0,xl),type="n",ylab="",xlab="",main=assembly[j],axes=FALSE,...)
     if(axes==FALSE){mtext(tx,1,at=lns, cex=0.7, adj=1.18,las=2)}
-    
-    
+
+
     for(i in seq_along(chrs)){
       abline(h=(yl/i)-1)
       mtext(chrs[i],side = 2,at=(yl/i)-1,las=2,cex=.7)
@@ -865,10 +866,10 @@ blast_plot0<-function(blast_out,scale=c("mb","kb"),cols=c("stitle","sseqid","sst
 #   if (class(dnab) != "DNAbin") {
 #     stop("Input must be a DNAbin object")
 #   }
-#   
+#
 #   # Convert DNAbin object to character matrix
 #   dna_matrix <- as.character(as.matrix(dnab))
-#   
+#
 #   # Function to calculate pairwise differences between two sequences
 #   pairwise_diff <- function(seq1, seq2) {
 #     if (pairwise.deletion) {
@@ -881,12 +882,12 @@ blast_plot0<-function(blast_out,scale=c("mb","kb"),cols=c("stitle","sseqid","sst
 #     }
 #     return(c(diff_count, total_count))
 #   }
-#   
+#
 #   # Calculate pairwise differences for all sequences
 #   num_seqs <- nrow(dna_matrix)
 #   total_diff <- 0
 #   total_sites <- 0
-#   
+#
 #   for (i in 1:(num_seqs - 1)) {
 #     for (j in (i + 1):num_seqs) {
 #       diffs <- pairwise_diff(dna_matrix[i, ], dna_matrix[j, ])
@@ -894,11 +895,11 @@ blast_plot0<-function(blast_out,scale=c("mb","kb"),cols=c("stitle","sseqid","sst
 #       total_sites <- total_sites + diffs[2]
 #     }
 #   }
-#   
+#
 #   # Calculate nucleotide diversity
 #   num_comparisons <- choose(num_seqs, 2)
 #   nucleotide_diversity <- total_diff / total_sites
-#   
+#
 #   return(nucleotide_diversity)
 # }
 # Custom function to calculate nucleotide diversity (pi) and Watterson's theta from DNAbin object
@@ -907,10 +908,10 @@ blast_plot0<-function(blast_out,scale=c("mb","kb"),cols=c("stitle","sseqid","sst
 #   if (class(dnab) != "DNAbin") {
 #     stop("Input must be a DNAbin object")
 #   }
-#   
+#
 #   # Convert DNAbin object to character matrix
 #   dna_matrix <- as.character(as.matrix(dnab))
-#   
+#
 #   # Function to calculate pairwise differences between two sequences
 #   pairwise_diff <- function(seq1, seq2) {
 #     if (pairwise_deletion) {
@@ -923,12 +924,12 @@ blast_plot0<-function(blast_out,scale=c("mb","kb"),cols=c("stitle","sseqid","sst
 #     }
 #     return(c(diff_count, total_count))
 #   }
-#   
+#
 #   # Calculate pairwise differences for all sequences
 #   num_seqs <- nrow(dna_matrix)
 #   total_diff <- 0
 #   total_sites <- 0
-#   
+#
 #   for (i in 1:(num_seqs - 1)) {
 #     for (j in (i + 1):num_seqs) {
 #       diffs <- pairwise_diff(dna_matrix[i, ], dna_matrix[j, ])
@@ -936,11 +937,11 @@ blast_plot0<-function(blast_out,scale=c("mb","kb"),cols=c("stitle","sseqid","sst
 #       total_sites <- total_sites + diffs[2]
 #     }
 #   }
-#   
+#
 #   # Calculate nucleotide diversity (pi)
 #   num_comparisons <- choose(num_seqs, 2)
 #   nucleotide_diversity <- total_diff / total_sites
-#   
+#
 #   # Calculate the number of segregating sites
 #   segregating_sites <- 0
 #   for (i in 1:ncol(dna_matrix)) {
@@ -950,15 +951,15 @@ blast_plot0<-function(blast_out,scale=c("mb","kb"),cols=c("stitle","sseqid","sst
 #       segregating_sites <- segregating_sites + 1
 #     }
 #   }
-#   
+#
 #   # Calculate Watterson's theta
 #   a1 <- sum(1 / (1:(num_seqs - 1)))
 #   sequence_length <- ncol(dna_matrix)
 #   watterson_theta <- segregating_sites / a1 /sequence_length
-#   
+#
 #   return(list(pi = nucleotide_diversity, theta = watterson_theta,tot_diff=total_diff,seg_sit=segregating_sites))
 # }
-# 
+#
 
 # Define the function to find clusters of blast hits
 # ** this function find clusters of gene coordinates within a given window (threshold)-
@@ -967,7 +968,7 @@ find_clusters <- function(numbers, threshold = 15000) {
   sorted_numbers <- sort(numbers)
   clusters <- list()
   current_cluster <- c(sorted_numbers[1])
-  
+
   for (i in 2:length(sorted_numbers)) {
     if ((sorted_numbers[i] - sorted_numbers[i-1]) <= threshold) {
       current_cluster <- c(current_cluster, sorted_numbers[i])
@@ -976,16 +977,16 @@ find_clusters <- function(numbers, threshold = 15000) {
       current_cluster <- c(sorted_numbers[i])
     }
   }
-  
+
   clusters[[length(clusters) + 1]] <- current_cluster
-  
+
   return(clusters)
 }
 
 
 find_number_clusters <- function(new_numbers, clusters) {
   number_to_cluster <- list()
-  
+
   for (number in new_numbers) {
     for (i in seq_along(clusters)) {
       cluster <- clusters[[i]]
@@ -995,7 +996,7 @@ find_number_clusters <- function(new_numbers, clusters) {
       }
     }
   }
-  
+
   return(number_to_cluster)
 }
 
@@ -1010,11 +1011,11 @@ find_number_clusters <- function(new_numbers, clusters) {
 #   for (i in 1:(nchar(seq1) / 3)) {
 #     codon1 <- substring(seq1, (i - 1) * 3 + 1, i * 3)
 #     codon2 <- substring(seq2, (i - 1) * 3 + 1, i * 3)
-# 
+#
 #     # Translate codons to amino acids using a genetic code table
 #     aa1 <- seqinr::translate(s2c(codon1))
 #     aa2 <- seqinr::translate(s2c(codon2))
-# 
+#
 #     # Check if the amino acids are different
 #     if (aa1 != aa2 ) {
 #       n_nonsyn <- n_nonsyn + 1  # Non-synonymous snps
@@ -1034,35 +1035,35 @@ find_number_clusters <- function(new_numbers, clusters) {
 
 
 piAS<-function(alignment,annotation,gene_length,reference,window=100,step=1){
-  
+
   annotation<-annotation[!duplicated(annotation[,c(3:5)]),]
   cds_coords<-annotation[annotation$type=="CDS",c(4,5)]
-  
+
   gene_start<-min(annotation[,c(4,5)])-1 #make the start 1(-start of the gene +1)
-  coding_regions <- cds_coords-gene_start 
+  coding_regions <- cds_coords-gene_start
   total_length<-gene_length
-  
+
   # remove gaps in the reference sequences
   columns_with_gaps <- which(as.character(alignment[grep(reference, labels(alignment)), ]) == "-")
   if(length(columns_with_gaps)>0){alignment <- alignment[, -columns_with_gaps]}
-  
+
   cds_sequences<-alignment
-  
+
   # Create a DNAStringSet with full gene length filled with "N"s
   full_gene <- Biostrings::DNAStringSet(rep(paste0(rep("N", total_length), collapse = ""),times=length(cds_sequences)))
   names(full_gene)<-labels(cds_sequences)
-  # Define the coordinates of the CDS regions 
-  cds_info <- coding_regions  
+  # Define the coordinates of the CDS regions
+  cds_info <- coding_regions
   # match the start end of coding regions to the full gene coding regions
   cds_info$diff<-cds_info[,2]-cds_info[,1]
   cds_info$nbp<-cds_info$diff+1
   start<-NULL
   end<-NULL
   for(i in 1:nrow(cds_info)){
-    if(i==1){start[i]<-1;end[i]<-cds_info$nbp[i]} 
-    if(i==2){start[i]<-(end[1]+1);end[i]<-(start[i]+cds_info$nbp[i])-1} 
+    if(i==1){start[i]<-1;end[i]<-cds_info$nbp[i]}
+    if(i==2){start[i]<-(end[1]+1);end[i]<-(start[i]+cds_info$nbp[i])-1}
     if(i>2){ start[i]<-(end[i-1]+1); end[i]<-(start[i]+cds_info$nbp[i])-1}
-    
+
   }
   cds_info$cd_start<-start
   cds_info$cd_end<-end
@@ -1072,20 +1073,20 @@ piAS<-function(alignment,annotation,gene_length,reference,window=100,step=1){
       full_gene[[j]][cds_info$start[k]:cds_info$end[k]]<-cds_sequences[[j]][cds_info$cd_start[k]:cds_info$cd_end[k]]
     }
   }
-  
+
   # Define the coding regions table
   alignment<-as.matrix(as.DNAbin(full_gene))
   wind <- window
   pb <- txtProgressBar(min = 0, max = ncol(alignment), style = 3, width = 50, char = "=", initial = 0)
   w_sy <- rep(NA, ncol(alignment))
   w_nsy <- rep(NA, ncol(alignment))
-  
+
   for (l in 1:ncol(alignment)) {
     setTxtProgressBar(pb, l)
     if (l + wind - 1 <= ncol(alignment)) {
       if(is_in_coding_region(l)){
         if(!is_in_coding_region(l+wind-1)){
-          
+
           if(is_in_coding_region(l-1)){sequences <- alignment[, (l-1):((l-1) + wind - 1)]} else {
             q<-l+1
             while(is_in_coding_region(q)){
@@ -1093,11 +1094,11 @@ piAS<-function(alignment,annotation,gene_length,reference,window=100,step=1){
             }
             sequences<-alignment[,l:(q-1)]
           }
-          
+
           # Initialize matrices to store results
           s_mat <- matrix(NA, nrow = nrow(sequences), ncol = nrow(sequences))
           ns_mat <- s_mat
-          
+
           for (j in 1:nrow(sequences)) {
             for (k in 1:nrow(sequences)) {
               s_ns <- calculate_snps(sequences[j, ], sequences[k, ])
@@ -1112,11 +1113,11 @@ piAS<-function(alignment,annotation,gene_length,reference,window=100,step=1){
           #set l to the end of coding region
           l<-(l+wind)
         }  else { sequences <- alignment[, l:(l + wind - 1)] }
-        
+
         # Initialize matrices to store results
         s_mat <- matrix(NA, nrow = nrow(sequences), ncol = nrow(sequences))
         ns_mat <- s_mat
-        
+
         for (j in 1:nrow(sequences)) {
           for (k in 1:nrow(sequences)) {
             s_ns <- calculate_snps(sequences[j, ], sequences[k, ])
@@ -1132,16 +1133,16 @@ piAS<-function(alignment,annotation,gene_length,reference,window=100,step=1){
         w_sy[(wind / 2) + ifelse(l == 1, 0, (l - 1))] <- NA
         w_nsy[(wind / 2) + ifelse(l == 1, 0, (l - 1))] <- NA
       }
-      
+
     }
     w_sy[1:(wind / 2) - 1] <- w_sy[wind / 2]
     w_sy[((wind / 2) + ifelse(l == 1, 0, (l - 1)) + 1):length(w_sy)] <- w_sy[(wind / 2) + ifelse(l == 1, 0, (l - 1))]
     w_nsy[1:(wind / 2) - 1] <- w_nsy[wind / 2]
     w_nsy[((wind / 2) + ifelse(l == 1, 0, (l - 1)) + 1):length(w_nsy)] <- w_nsy[(wind / 2) + ifelse(l == 1, 0, (l - 1))]
   }
-  
+
   close(pb)
-  
+
   return(list(Pi_a=w_nsy,Pi_s=w_sy))
 }
 
@@ -1152,16 +1153,16 @@ piAS_2<-function(algn,annotation,window=100,gene_length=NULL){
   pb <- txtProgressBar(min = 0, max = ncol(alignment), style = 3, width = 50, char = "=", initial = 0)
   w_sy <- rep(NA, ncol(alignment))
   w_nsy <- rep(NA, ncol(alignment))
-  
+
   for (l in 1:ncol(alignment)) {
     setTxtProgressBar(pb, l)
     if (l + wind - 1 <= ncol(alignment)) {
       # Initialize matrices to store results
       sequences<-alignment[,l:(l+wind-1)]
-      
+
       s_mat <- matrix(NA, nrow = nrow(sequences), ncol = nrow(sequences))
       ns_mat <- s_mat
-      
+
       for (j in 1:nrow(sequences)) {
         for (k in 1:nrow(sequences)) {
           s_ns <- calculate_snps(sequences[j, ], sequences[k, ])
@@ -1173,9 +1174,9 @@ piAS_2<-function(algn,annotation,window=100,gene_length=NULL){
       m_nsy <- mean(ns_mat[lower.tri(ns_mat)])
       w_sy[(wind / 2) + ifelse(l == 1, 0, (l - 1))] <- m_sy
       w_nsy[(wind / 2) + ifelse(l == 1, 0, (l - 1))] <- m_nsy
-      
+
     }
-    
+
   }
   close(pb)
   w_sy[1:(wind / 2) - 1] <- w_sy[wind / 2]
@@ -1183,25 +1184,25 @@ piAS_2<-function(algn,annotation,window=100,gene_length=NULL){
   lna<-(wind / 2) + (ncol(alignment)-wind+1 - 1)
   w_sy[(lna+1):ncol(alignment)]<-w_sy[lna]
   w_nsy[(lna+1):ncol(alignment)]<-w_nsy[lna]
-  
+
   cds_coords<-annotation[annotation$type=="CDS",c(4,5)]
-  coding_regions <- cds_coords 
+  coding_regions <- cds_coords
   # total_length<-gene_length
-  cds_info <- coding_regions  
+  cds_info <- coding_regions
   # match the start end of coding regions to the full gene coding regions
   cds_info$diff<-cds_info[,2]-cds_info[,1]
   cds_info$nbp<-cds_info$diff+1
   start<-NULL
   end<-NULL
   for(i in 1:nrow(cds_info)){
-    if(i==1){start[i]<-1;end[i]<-cds_info$nbp[i]} 
-    if(i==2){start[i]<-(end[1]+1);end[i]<-(start[i]+cds_info$nbp[i])-1} 
+    if(i==1){start[i]<-1;end[i]<-cds_info$nbp[i]}
+    if(i==2){start[i]<-(end[1]+1);end[i]<-(start[i]+cds_info$nbp[i])-1}
     if(i>2){ start[i]<-(end[i-1]+1); end[i]<-(start[i]+cds_info$nbp[i])-1}
-    
+
   }
   cds_info$cd_start<-start
   cds_info$cd_end<-end
-  
+
   if(is.null(gene_length)){gene_length<-annotation$end[annotation$type=="gene"]}
   full_gene_nsy<-rep(NA,gene_length)
   full_gene_sy<-rep(NA,gene_length)
@@ -1209,7 +1210,7 @@ piAS_2<-function(algn,annotation,window=100,gene_length=NULL){
     full_gene_nsy[cds_info$start[k]:cds_info$end[k]]<-w_nsy[cds_info$cd_start[k]:cds_info$cd_end[k]]
     full_gene_sy[cds_info$start[k]:cds_info$end[k]]<-w_sy[cds_info$cd_start[k]:cds_info$cd_end[k]]
   }
-  
+
   #for the overall gene (average)
   s_mat <- matrix(NA, nrow = nrow(alignment), ncol = nrow(alignment))
   ns_mat <- s_mat
@@ -1222,7 +1223,7 @@ piAS_2<-function(algn,annotation,window=100,gene_length=NULL){
   }
   m_sy <- mean(s_mat[lower.tri(s_mat)])
   m_nsy <- mean(ns_mat[lower.tri(ns_mat)])
-  
+
   return(list(pi_A=full_gene_nsy,pi_S=full_gene_sy,avg_nsy=m_nsy,avg_sy=m_sy))
 }
 
@@ -1238,14 +1239,14 @@ piAS_3<-function(algn,annotation,window=100,gene_length=NULL,pairwise_deletion=T
   alignment<-as.matrix(as.DNAbin(algn))
   w_sy <- rep(NA, ncol(alignment))
   w_nsy <- rep(NA, ncol(alignment))
-  
+
   lout<-rCNV:::lapply_pb(1:ncol(alignment), function(x){
     if (x + wind - 1 <= ncol(alignment)) {
       sequences<-alignment[,x:(x+wind-1)]
       # Initialize matrices to store results
       s_mat <- matrix(NA, nrow = nrow(sequences), ncol = nrow(sequences))
       ns_mat <- s_mat
-      
+
       for (j in 1:nrow(sequences)) {
         for (k in 1:nrow(sequences)) {
           gaps_s1<-sum(as.character(sequences[j, ])=="-")
@@ -1267,10 +1268,10 @@ piAS_3<-function(algn,annotation,window=100,gene_length=NULL,pairwise_deletion=T
       }
       m_sy <- mean(s_mat[lower.tri(s_mat)],na.rm=TRUE)
       m_nsy <- mean(ns_mat[lower.tri(ns_mat)],na.rm=TRUE)
-      
+
     } else{m_sy<-NA;m_nsy<-NA}
     return(c(m_sy,m_nsy))
-  }) 
+  })
   lout<-na.omit(do.call(rbind,lout))
   # assign the pi values to the right coordinate
   st<-(wind/2);ed<-ncol(alignment)-(wind/2)
@@ -1281,25 +1282,25 @@ piAS_3<-function(algn,annotation,window=100,gene_length=NULL,pairwise_deletion=T
   lna<-(wind / 2) + (ncol(alignment)-wind+1 - 1)
   w_sy[(lna+1):ncol(alignment)]<-w_sy[lna]
   w_nsy[(lna+1):ncol(alignment)]<-w_nsy[lna]
-  
+
   # assign the pi values to the full gene
   cds_coords<-annotation[annotation$type=="CDS",c(4,5)]
-  coding_regions <- cds_coords 
-  cds_info <- coding_regions  
+  coding_regions <- cds_coords
+  cds_info <- coding_regions
   # match the start end of coding regions to the full gene coding regions
   cds_info$diff<-cds_info[,2]-cds_info[,1]
   cds_info$nbp<-cds_info$diff+1
   start<-NULL
   end<-NULL
   for(i in 1:nrow(cds_info)){
-    if(i==1){start[i]<-1;end[i]<-cds_info$nbp[i]} 
-    if(i==2){start[i]<-(end[1]+1);end[i]<-(start[i]+cds_info$nbp[i])-1} 
+    if(i==1){start[i]<-1;end[i]<-cds_info$nbp[i]}
+    if(i==2){start[i]<-(end[1]+1);end[i]<-(start[i]+cds_info$nbp[i])-1}
     if(i>2){ start[i]<-(end[i-1]+1); end[i]<-(start[i]+cds_info$nbp[i])-1}
-    
+
   }
   cds_info$cd_start<-start
   cds_info$cd_end<-end
-  
+
   if(is.null(gene_length)){gene_length<-annotation$end[annotation$type=="gene"]}
   full_gene_nsy<-rep(NA,gene_length)
   full_gene_sy<-rep(NA,gene_length)
@@ -1307,7 +1308,7 @@ piAS_3<-function(algn,annotation,window=100,gene_length=NULL,pairwise_deletion=T
     full_gene_nsy[cds_info$start[k]:cds_info$end[k]]<-w_nsy[cds_info$cd_start[k]:cds_info$cd_end[k]]
     full_gene_sy[cds_info$start[k]:cds_info$end[k]]<-w_sy[cds_info$cd_start[k]:cds_info$cd_end[k]]
   }
-  
+
   #for the overall gene (average)
   s_mat <- matrix(NA, nrow = nrow(alignment), ncol = nrow(alignment))
   ns_mat <- s_mat
@@ -1337,13 +1338,13 @@ piAS_3_mc <- function(algn, annotation, window = 100, gene_length = NULL, pairwi
   alignment <- as.matrix(as.DNAbin(algn))
   w_sy <- rep(NA, ncol(alignment))
   w_nsy <- rep(NA, ncol(alignment))
-  
+
   if (parallel) {
     if (ncor > detectCores() - 1) {
       ncor <- detectCores() - 1
     }
     cl <- makeCluster(ncor)
-    
+
     # Export necessary functions and variables to the cluster
     clusterExport(cl, varlist = c("alignment", "wind"),envir = environment())
     clusterEvalQ(cl, {
@@ -1353,7 +1354,7 @@ piAS_3_mc <- function(algn, annotation, window = 100, gene_length = NULL, pairwi
       library(seqinr)
       sourceCpp("calculate_snps3.cpp")
     })
-    
+
     lout <- parLapply(cl, 1:ncol(alignment), function(x) {
       #log_file <- file(paste0("log_worker_", Sys.getpid(), ".txt"), open = "a")
       if (x + wind - 1 <= ncol(alignment)) {
@@ -1387,17 +1388,17 @@ piAS_3_mc <- function(algn, annotation, window = 100, gene_length = NULL, pairwi
       #close(log_file)
       return(c(m_sy,m_nsy))
     })
-    
+
     stopCluster(cl)
   } else {
     lout <- rCNV:::lapply_pb(1:ncol(alignment), function(x) {
       if (x + wind - 1 <= ncol(alignment)) {
         # Initialize matrices to store results
         sequences <- alignment[, x:(x + wind - 1)]
-        
+
         s_mat <- matrix(NA, nrow = nrow(sequences), ncol = nrow(sequences))
         ns_mat <- s_mat
-        
+
         for (j in 1:nrow(sequences)) {
           for (k in 1:nrow(sequences)) {
             s_ns <- calculate_snps(sequences[j, ], sequences[k, ])
@@ -1407,7 +1408,7 @@ piAS_3_mc <- function(algn, annotation, window = 100, gene_length = NULL, pairwi
         }
         m_sy <- mean(s_mat[lower.tri(s_mat)],na.rm=T)
         m_nsy <- mean(ns_mat[lower.tri(ns_mat)],na.rm=T)
-        
+
       } else {
         m_sy <- NA
         m_nsy <- NA
@@ -1415,9 +1416,9 @@ piAS_3_mc <- function(algn, annotation, window = 100, gene_length = NULL, pairwi
       return(c(m_sy, m_nsy))
     })
   }
-  
+
   lout <- na.omit(do.call(rbind, lout))
-  
+
   # assign the pi values to the right coordinate
   st <- (wind / 2)
   ed <- ncol(alignment) - (wind / 2)
@@ -1428,7 +1429,7 @@ piAS_3_mc <- function(algn, annotation, window = 100, gene_length = NULL, pairwi
   lna <- (wind / 2) + (ncol(alignment) - wind + 1 - 1)
   w_sy[(lna + 1):ncol(alignment)] <- w_sy[lna]
   w_nsy[(lna + 1):ncol(alignment)] <- w_nsy[lna]
-  
+
   # assign the pi values to the full gene
   cds_coords <- annotation[annotation$type == "CDS", c(4, 5)]
   coding_regions <- cds_coords
@@ -1454,7 +1455,7 @@ piAS_3_mc <- function(algn, annotation, window = 100, gene_length = NULL, pairwi
   }
   cds_info$cd_start <- start
   cds_info$cd_end <- end
-  
+
   if (is.null(gene_length)) {
     gene_length <- annotation$end[annotation$type == "gene"]
   }
@@ -1464,7 +1465,7 @@ piAS_3_mc <- function(algn, annotation, window = 100, gene_length = NULL, pairwi
     full_gene_nsy[cds_info$start[k]:cds_info$end[k]] <- w_nsy[cds_info$cd_start[k]:cds_info$cd_end[k]]
     full_gene_sy[cds_info$start[k]:cds_info$end[k]] <- w_sy[cds_info$cd_start[k]:cds_info$cd_end[k]]
   }
-  
+
   # for the overall gene (average)
   s_mat <- matrix(NA, nrow = nrow(alignment), ncol = nrow(alignment))
   ns_mat <- s_mat
@@ -1477,7 +1478,7 @@ piAS_3_mc <- function(algn, annotation, window = 100, gene_length = NULL, pairwi
   }
   m_sy <- mean(s_mat[lower.tri(s_mat)],na.rm=T)
   m_nsy <- mean(ns_mat[lower.tri(ns_mat)],na.rm=T)
-  
+
   return(list(pi_A = full_gene_nsy, pi_S = full_gene_sy, avg_nsy = m_nsy, avg_sy = m_sy))
 }
 
@@ -1488,14 +1489,14 @@ piAS_4 <- function(algn, annotation, window = 100, gene_length = NULL, pairwise_
   alignment <- as.matrix(as.DNAbin(algn))
   w_sy <- rep(NA, ncol(alignment))
   w_nsy <- rep(NA, ncol(alignment))
-  
+
   lout <- rCNV:::lapply_pb(1:ncol(alignment), function(x) {
     if (x + wind - 1 <= ncol(alignment)) {
       sequences <- alignment[, x:(x + wind - 1)]
       # Initialize matrices to store results
       s_mat <- matrix(NA, nrow = nrow(sequences), ncol = nrow(sequences))
       ns_mat <- s_mat
-      
+
       for (j in 1:nrow(sequences)) {
         for (k in 1:nrow(sequences)) {
           gaps_s1 <- sum(as.character(sequences[j, ]) == "-")
@@ -1518,7 +1519,7 @@ piAS_4 <- function(algn, annotation, window = 100, gene_length = NULL, pairwise_
       }
       m_sy <- mean(s_mat[lower.tri(s_mat)], na.rm = TRUE)
       m_nsy <- mean(ns_mat[lower.tri(ns_mat)], na.rm = TRUE)
-      
+
     } else {
       m_sy <- NA
       m_nsy <- NA
@@ -1535,7 +1536,7 @@ piAS_4 <- function(algn, annotation, window = 100, gene_length = NULL, pairwise_
   lna <- (wind / 2) + (ncol(alignment) - wind + 1 - 1)
   w_sy[(lna + 1):ncol(alignment)] <- w_sy[lna]
   w_nsy[(lna + 1):ncol(alignment)] <- w_nsy[lna]
-  
+
   # Assign the pi values to the full gene
   cds_coords <- annotation[annotation$type == "CDS", c(4, 5)]
   coding_regions <- cds_coords
@@ -1561,7 +1562,7 @@ piAS_4 <- function(algn, annotation, window = 100, gene_length = NULL, pairwise_
   }
   cds_info$cd_start <- start
   cds_info$cd_end <- end
-  
+
   if (is.null(gene_length)) {
     gene_length <- annotation$end[annotation$type == "gene"]
   }
@@ -1571,7 +1572,7 @@ piAS_4 <- function(algn, annotation, window = 100, gene_length = NULL, pairwise_
     full_gene_nsy[cds_info$start[k]:cds_info$end[k]] <- w_nsy[cds_info$cd_start[k]:cds_info$cd_end[k]]
     full_gene_sy[cds_info$start[k]:cds_info$end[k]] <- w_sy[cds_info$cd_start[k]:cds_info$cd_end[k]]
   }
-  
+
   # For the overall gene (average)
   s_mat <- matrix(NA, nrow = nrow(alignment), ncol = nrow(alignment))
   ns_mat <- s_mat
@@ -1603,13 +1604,13 @@ piAS_5 <- function(algn, annotation, window = 100, gene_length = NULL, pairwise_
       tmp<-calculate_pi(sequences)
       lout[ss[i]:(ss[i]+2),1]<-tmp[1]
       lout[ss[i]:(ss[i]+2),2]<-tmp[2]
-    } 
+    }
   }
-  
+
   lout<-na.omit(lout)
   w_sy <- rep(NA, ncol(alignment))
   w_nsy <- rep(NA, ncol(alignment))
-  
+
   st <- (wind / 2); ed <- ncol(alignment) - (wind / 2)
   w_sy[st:ed] <- c(lout[, 1])
   w_nsy[st:ed] <- c(lout[, 2])
@@ -1618,7 +1619,7 @@ piAS_5 <- function(algn, annotation, window = 100, gene_length = NULL, pairwise_
   lna <- (wind / 2) + (ncol(alignment) - wind + 1 - 1)
   w_sy[(lna + 1):ncol(alignment)] <- w_sy[lna]
   w_nsy[(lna + 1):ncol(alignment)] <- w_nsy[lna]
-  
+
   w_sy_nsy <- data.frame(syn=w_sy,n_syn=w_nsy)
   # Assign the pi values to the full gene
   cds_coords <- annotation[annotation$type == "CDS", c(4, 5)]
@@ -1645,7 +1646,7 @@ piAS_5 <- function(algn, annotation, window = 100, gene_length = NULL, pairwise_
   }
   cds_info$cd_start <- start
   cds_info$cd_end <- end
-  
+
   if (is.null(gene_length)) {
     gene_length <- annotation$end[annotation$type == "gene"]
   }
@@ -1665,7 +1666,7 @@ piAS_5 <- function(algn, annotation, window = 100, gene_length = NULL, pairwise_
 pi_gen<-function(path,window=100,plot=TRUE,main){
   algn<-readDNAStringSet(path)
   alignment<-as.DNAbin(as.matrix(algn))
-  
+
   wind=window
   pb <- txtProgressBar(min = 0, max = ncol(alignment), style = 3, width = 50, char = "=",initial = 0)
   mps_al<-rep(NA,ncol(alignment))
@@ -1689,7 +1690,7 @@ pi_gen<-function(path,window=100,plot=TRUE,main){
 pi_gen2<-function(path,window=100,plot=TRUE,main,pairwise.deletion=TRUE){
   algn<-readDNAStringSet(path)
   alignment<-as.DNAbin(as.matrix(algn))
-  
+
   wind=window
   pb <- txtProgressBar(min = 0, max = ncol(alignment), style = 3, width = 50, char = "=",initial = 0)
   mps_al<-rep(NA,ncol(alignment))
@@ -1713,7 +1714,7 @@ Rcpp::sourceCpp("/Users/piyalkaru/Desktop/DDORF/R/scripts/msc/calc_nuc_div_theta
 pi_gen3<-function(fast_path,window=100,pairwise_deletion=TRUE,plot=TRUE,main=""){
   if(is.character(fast_path)){algn<-readDNAStringSet(fast_path)}else{algn<-fast_path}
   alignment<-as.DNAbin(as.matrix(algn))
-  
+
   wind=window
   pb <- txtProgressBar(min = 0, max = ncol(alignment), style = 3, width = 50, char = "=",initial = 0)
   mps_al<-rep(NA,ncol(alignment))
@@ -1729,21 +1730,21 @@ pi_gen3<-function(fast_path,window=100,pairwise_deletion=TRUE,plot=TRUE,main="")
       theta_al[(wind/2)+ifelse(j==1,0,(j-1))]<-stats$theta
       tot_diff[(wind/2)+ifelse(j==1,0,(j-1))]<-stats$tot_diff
       seg_sit[(wind/2)+ifelse(j==1,0,(j-1))]<-stats$seg_sit
-      
+
     }
     mps_al[1:(wind/2)-1]<-mps_al[wind/2]
     mps_al[((wind/2)+ifelse(j==1,0,(j-1))+1):length(mps_al)]<-mps_al[(wind/2)+ifelse(j==1,0,(j-1))]
-    
+
     theta_al[1:(wind/2)-1]<-theta_al[wind/2]
     theta_al[((wind/2)+ifelse(j==1,0,(j-1))+1):length(theta_al)]<-theta_al[(wind/2)+ifelse(j==1,0,(j-1))]
-    
+
     tot_diff[1:(wind/2)-1]<-tot_diff[wind/2]
     tot_diff[((wind/2)+ifelse(j==1,0,(j-1))+1):length(tot_diff)]<-tot_diff[(wind/2)+ifelse(j==1,0,(j-1))]
-    
+
     seg_sit[1:(wind/2)-1]<-seg_sit[wind/2]
     seg_sit[((wind/2)+ifelse(j==1,0,(j-1))+1):length(seg_sit)]<-seg_sit[(wind/2)+ifelse(j==1,0,(j-1))]
-    
-    
+
+
   }
   close(pb)
   gene<-calc_nuc_div_theta(alignment,pairwise_deletion = pairwise_deletion)
