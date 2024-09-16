@@ -1,4 +1,4 @@
-# rCNV <img src='inst/gSoup_logo.png' align='right' height='139' />
+# gSoup <img src='inst/gSoup_logo.png' align='right' height='139' />
 
 ## gSoup: An R package to perform various genetic analyses
 
