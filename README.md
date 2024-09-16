@@ -12,8 +12,9 @@ package; hence it’s a SOUP. If you have any tools, analyses, plottings,
 or anyother tool you like to use in R, let me know. I will add it. Let’s
 make this an ALL-IN-ONE package.
 
-<img src="inst/Athaliana_plot_exmaple.png" width="400" /> Here is a plot
-I created with the package.
+<img src="inst/Athaliana_plot_exmaple.png" width="400" />
+
+Here is a plot I created with the package.
 
 ***A tutorial of functions in the package will be up soon***
 

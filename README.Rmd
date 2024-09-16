@@ -21,6 +21,7 @@ cat("# gSoup <img src='inst/gSoup_logo.png' align='right' height='139' />")
 I wrote this package to assemble all essential bioinformatic tools in one place because I was tired of having to switch between different platforms to perform basic (and advance) population genetics and molecular evolution analyses. Whatever I find useful I will add to the package; hence it's a SOUP. If you have any tools, analyses, plottings, or anyother tool you like to use in R, let me know. I will add it. Let's make this an ALL-IN-ONE package.
 
 ![](inst/Athaliana_plot_exmaple.png){width=400}
+
 Here is a plot I created with the package.
 
 ***A tutorial of functions in the package will be up soon***
