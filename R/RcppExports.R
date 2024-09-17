@@ -2,10 +2,10 @@
 # Generator token: 10BE3573-1514-4C36-9D1C-5A225CD40393
 
 calc_nuc_div_theta <- function(dna_matrix, pairwise_deletion = TRUE) {
-    .Call('_gSoup_calc_nuc_div_theta', PACKAGE = 'gSoup', dna_matrix, pairwise_deletion)
+    .Call(`_gSoup_calc_nuc_div_theta`, dna_matrix, pairwise_deletion)
 }
 
 calculate_pi <- function(alignment) {
-    .Call('_gSoup_calculate_pi', PACKAGE = 'gSoup', alignment)
+    .Call(`_gSoup_calculate_pi`, alignment)
 }
 

@@ -46,6 +46,7 @@ GeneAnno<-function(an.tab,genes=NULL,scale=c("mb","kb"),orient=c("horizontal","v
     coords<-an.tab[an.tab$type=="exon",c("start","end")]
     all_gstart<-min(as.numeric(an.tab[an.tab$type=="exon","start"]))
     all_gend<-max(as.numeric(an.tab[an.tab$type=="exon","end"]))
+    lns<-seq(all_gstart,all_gend,length.out=10)
   }
 
   for(g in 1:nsp){

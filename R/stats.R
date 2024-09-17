@@ -109,6 +109,7 @@ piAS <- function(algn, annotation, window = 100, gene_length = NULL, pairwise_de
 #' @param progress description
 #' @param ... description
 #'
+#' @useDynLib gSoup, .registration = TRUE
 #' @author Piyal Karunarathne
 #'
 #'
