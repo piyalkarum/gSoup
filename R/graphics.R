@@ -260,6 +260,9 @@ plot_pi_theta<-function(Pi,annotation,anno.type=c("exon","CDS"),ratio=FALSE,log_
   # add gene annotation
   start_codon<-as.numeric(annotation[annotation$type=="start_codon","start"])
   stop_codon<-as.numeric(annotation[annotation$type=="stop_codon","end"])
+  if(length(start_codon)<1){start_codon<-as.numeric(annotation[annotation$type=="CDS","start"][1])}
+  if(length(stop_codon)<1){stop_codon<-as.numeric(annotation[annotation$type=="CDS","end"][sum(annotation$type=="CDS")])}
+  stop_codon<-stop_codon+2
 
   if(intron){
     cds<-data.frame(annotation[annotation$type==anno.type | annotation$type=="intron",c("type","start","end")])
