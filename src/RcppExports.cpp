@@ -33,10 +33,22 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// calculate_sfs_cpp
+IntegerVector calculate_sfs_cpp(CharacterMatrix alignment);
+RcppExport SEXP _gSoup_calculate_sfs_cpp(SEXP alignmentSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< CharacterMatrix >::type alignment(alignmentSEXP);
+    rcpp_result_gen = Rcpp::wrap(calculate_sfs_cpp(alignment));
+    return rcpp_result_gen;
+END_RCPP
+}
 
 static const R_CallMethodDef CallEntries[] = {
     {"_gSoup_calc_nuc_div_theta", (DL_FUNC) &_gSoup_calc_nuc_div_theta, 2},
     {"_gSoup_calculate_pi", (DL_FUNC) &_gSoup_calculate_pi, 1},
+    {"_gSoup_calculate_sfs_cpp", (DL_FUNC) &_gSoup_calculate_sfs_cpp, 1},
     {NULL, NULL, 0}
 };
 

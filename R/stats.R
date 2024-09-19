@@ -109,6 +109,7 @@ piAS <- function(algn, annotation, window = 100, gene_length = NULL, pairwise_de
 #' @param progress description
 #' @param ... description
 #'
+#' @importFrom Rcpp sourceCpp
 #' @useDynLib gSoup, .registration = TRUE
 #' @author Piyal Karunarathne
 #'
@@ -116,6 +117,58 @@ piAS <- function(algn, annotation, window = 100, gene_length = NULL, pairwise_de
 #'
 #' @export
 pi_theta<-function(fast_path,window=100,pairwise_deletion=TRUE,plot=TRUE,progress=TRUE,...){
+  if(is.character(fast_path)){algn<-readDNAStringSet(fast_path)}else{algn<-fast_path}
+  ll<-list(...)
+  if(is.null(ll$main)){ll$main<-""}
+
+  alignment<-as.DNAbin(as.matrix(algn))
+  wind=window
+  pb <- txtProgressBar(min = 0, max = ncol(alignment), style = 3, width = 50, char = "=",initial = 0)
+  mps_al<-rep(NA,ncol(alignment))
+  theta_al<-rep(NA,ncol(alignment))
+  tot_diff<-rep(NA,ncol(alignment))
+  seg_sit<-rep(NA,ncol(alignment))
+  tajima<-rep(NA,ncol(alignment))
+  for(j in 1:ncol(alignment)){
+    if(progress){setTxtProgressBar(pb, j)}
+    if(j+wind-1<=ncol(alignment)){
+      wind_bin<-alignment[,j:(j+wind-1)]
+      stats<-calc_nuc_div_theta(wind_bin,pairwise_deletion = pairwise_deletion)
+      sfs<-calculate_sfs_cpp(wind_bin)
+      tj<-TajimaD(sfs)
+
+      mps_al[(wind/2)+ifelse(j==1,0,(j-1))]<-stats$pi
+      theta_al[(wind/2)+ifelse(j==1,0,(j-1))]<-stats$theta
+      tot_diff[(wind/2)+ifelse(j==1,0,(j-1))]<-stats$tot_diff
+      seg_sit[(wind/2)+ifelse(j==1,0,(j-1))]<-stats$seg_sit
+      tajima[(wind/2)+ifelse(j==1,0,(j-1))]<-tj
+
+    }
+    mps_al[1:(wind/2)-1]<-mps_al[wind/2]
+    mps_al[((wind/2)+ifelse(j==1,0,(j-1))+1):length(mps_al)]<-mps_al[(wind/2)+ifelse(j==1,0,(j-1))]
+
+    theta_al[1:(wind/2)-1]<-theta_al[wind/2]
+    theta_al[((wind/2)+ifelse(j==1,0,(j-1))+1):length(theta_al)]<-theta_al[(wind/2)+ifelse(j==1,0,(j-1))]
+
+    tot_diff[1:(wind/2)-1]<-tot_diff[wind/2]
+    tot_diff[((wind/2)+ifelse(j==1,0,(j-1))+1):length(tot_diff)]<-tot_diff[(wind/2)+ifelse(j==1,0,(j-1))]
+
+    seg_sit[1:(wind/2)-1]<-seg_sit[wind/2]
+    seg_sit[((wind/2)+ifelse(j==1,0,(j-1))+1):length(seg_sit)]<-seg_sit[(wind/2)+ifelse(j==1,0,(j-1))]
+
+    tajima[1:(wind/2)-1]<-tajima[wind/2]
+    tajima[((wind/2)+ifelse(j==1,0,(j-1))+1):length(tajima)]<-tajima[(wind/2)+ifelse(j==1,0,(j-1))]
+  }
+  if(progress){close(pb)}
+  gene<-calc_nuc_div_theta(alignment,pairwise_deletion = pairwise_deletion)
+  sfs<-calculate_sfs_cpp(alignment)
+  gene$tajimasD<-TajimaD(sfs)
+  if(plot){plot(mps_al,type="l",xlab="position",ylab="Pi (black)/Theta-W (red)",ylim=c(range(c(mps_al,theta_al))),main=ll$main);lines(theta_al,col=2);abline(h=c(gene$pi,gene$theta),col=c(1,2))}
+  return(list(window=data.frame(pi=mps_al,theta_w=theta_al,total_diff=tot_diff,seg_sites=seg_sit,tajimasD=tajima),average=gene))
+}
+
+
+pi_theta0<-function(fast_path,window=100,pairwise_deletion=TRUE,plot=TRUE,progress=TRUE,...){
   if(is.character(fast_path)){algn<-readDNAStringSet(fast_path)}else{algn<-fast_path}
   ll<-list(...)
   if(is.null(ll$main)){ll$main<-""}
@@ -155,4 +208,43 @@ pi_theta<-function(fast_path,window=100,pairwise_deletion=TRUE,plot=TRUE,progres
   gene<-calc_nuc_div_theta(alignment,pairwise_deletion = pairwise_deletion)
   if(plot){plot(mps_al,type="l",xlab="position",ylab="Pi (black)/Theta-W (red)",ylim=c(range(c(mps_al,theta_al))),main=ll$main);lines(theta_al,col=2);abline(h=c(gene$pi,gene$theta),col=c(1,2))}
   return(list(window=data.frame(pi=mps_al,theta_w=theta_al,total_diff=tot_diff,seg_sites=seg_sit),average=gene))
+}
+
+
+#' Calculate Tajima's D using SFS
+#'
+#' @param sfs site frequency spectrum
+#'
+#' @export
+TajimaD <- function(sfs) {
+  n <- length(sfs) + 1
+  ss <- sum(sfs)
+
+  # Harmonic sums
+  a1 <- sum(1 / seq_len(n - 1))
+  a2 <- sum(1 / seq_len(n - 1)^2)
+
+  # Constants for variance calculation
+  b1 <- (n + 1) / (3 * (n - 1))
+  b2 <- 2 * (n^2 + n + 3) / (9 * n * (n - 1))
+
+  c1 <- b1 - 1 / a1
+  c2 <- b2 - (n + 2) / (a1 * n) + a2 / a1^2
+
+  e1 <- c1 / a1
+  e2 <- c2 / (a1^2 + a2)
+
+  # Variance of Tajima's D
+  Vd <- e1 * ss + e2 * ss * (ss - 1)
+
+  # Nucleotide diversity (theta_pi)
+  theta_pi <- sum(2 * seq_len(n - 1) * (n - seq_len(n - 1)) * sfs) / (n * (n - 1))
+
+  # Watterson's theta (theta_w)
+  theta_w <- ss / a1
+
+  # Tajima's D
+  res <- (theta_pi - theta_w) / sqrt(Vd)
+
+  return(res)
 }

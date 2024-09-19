@@ -9,3 +9,7 @@ calculate_pi <- function(alignment) {
     .Call(`_gSoup_calculate_pi`, alignment)
 }
 
+calculate_sfs_cpp <- function(alignment) {
+    .Call(`_gSoup_calculate_sfs_cpp`, alignment)
+}
+
