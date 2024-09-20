@@ -16,21 +16,21 @@ gb2sense(
 )
 }
 \arguments{
-\item{gb_file}{description}
+\item{gb_file}{path to the .gb(k) file}
 
-\item{path}{description}
+\item{path}{path the genebank file directory with multipel .gb(k) files}
 
-\item{annotation}{description}
+\item{annotation}{logical. Whether to extract annotation information}
 
-\item{fasta_out}{description}
+\item{fasta_out}{path to output fasta file}
 
-\item{annotation_out}{description}
+\item{annotation_out}{path to output the annotation file}
 
-\item{separate_fasta}{description}
+\item{separate_fasta}{logical. Whether to export separate fasta files for multiple .gb(k) files}
 
-\item{DNAstringSet}{description}
+\item{DNAstringSet}{logical. Whether to return the fasta sequnces in a DNAStringSet object}
 
-\item{xy_orient}{description}
+\item{xy_orient}{logical. Whether to reorient the annotation when the sequence is on the negative strand}
 }
 \value{
 Returns a DNAStringSet object of fasta sequnces and data frame of annotations

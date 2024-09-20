@@ -7,8 +7,23 @@
 TajimaD(sfs)
 }
 \arguments{
-\item{sfs}{site frequency spectrum}
+\item{sfs}{site frequency spectrum in a numeric vector}
+}
+\value{
+Returns a single value of Tajima's D
 }
 \description{
-Calculate Tajima's D using SFS
+This function calculates Tajima's D according to \strong{Tajima (1989)} using a site-frequence-specture given as a numerical vector
+}
+\examples{
+fasta<-paste0(path.package("gSoup"), "/alignment.fasta")
+sfs<-calculate_sfs(fasta)
+TajimaD(sfs)
+
+}
+\references{
+Tajima, F. (1989). Statistical method for testing the neutral mutation hypothesis by DNA polymorphism. Genetics, 123(3), 585-595.
+}
+\author{
+Piyal Karunarathne
 }

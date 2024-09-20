@@ -14,21 +14,33 @@ pi_theta(
 )
 }
 \arguments{
-\item{fast_path}{description}
+\item{fast_path}{description
+must have at least the three colums \code{type, start, end}}
 
-\item{window}{description}
+\item{window}{size of the sliding window. \code{default=100}}
 
-\item{pairwise_deletion}{description}
+\item{pairwise_deletion}{logical. Whether to ignore gaps in the pairwise alignment. \code{default=TRUE}}
 
-\item{plot}{description}
+\item{plot}{logical. Whether to plot the output}
 
-\item{progress}{description}
+\item{progress}{logical. Whether to show progress}
 
-\item{...}{description}
+\item{...}{any other parameters to pass to \link{plot.default}}
+}
+\value{
+Returns a list with nucleotide diversity \eqn{\pi}, watterson's theta \eqn{\theta[W]},
+total number of sites, number of segregating sites and Tajima's D in a sliding window and average
 }
 \description{
 This function calculates nucleotide diversity and Watterson's theta
 from a multiple sequnce alignment
+}
+\examples{
+fasta<-paste0(path.package("gSoup"), "/alignment.fasta")
+PT<-pi_theta(fasta)
+
+
+
 }
 \author{
 Piyal Karunarathne

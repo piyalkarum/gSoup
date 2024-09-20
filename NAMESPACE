@@ -2,6 +2,8 @@
 
 export(GeneAnno)
 export(TajimaD)
+export(calculate_sfs)
+export(div.stats)
 export(fast_split_sw)
 export(gb2sense)
 export(pairwise_length)

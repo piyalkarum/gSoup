@@ -17,28 +17,36 @@ plot_pi_theta(
 )
 }
 \arguments{
-\item{Pi}{description}
+\item{Pi}{list containing \eqn{\pi} from the output of \link{pi_theta} function}
 
-\item{annotation}{description}
+\item{annotation}{a data frame of the annotation of the gene or the sequence in the alignment.
+must have at least the three colums \code{type, start, end}}
 
-\item{anno.type}{description}
+\item{anno.type}{character. type of gene structure to be plotted (e.g. \code{exon} or \code{CDS})}
 
-\item{ratio}{description}
+\item{ratio}{logical. Whether to draw the \eqn{\pi/\theta} ratio plot}
 
-\item{log_scale}{description}
+\item{log_scale}{logical. If \code{ratio=TRUE}, whether to use the log2 scale}
 
-\item{ann.width}{description}
+\item{ann.width}{numerical. width of the gene annotation as a percentage at the bottom of the plot. \code{default=NULL}, determined as a percentage of the plot size}
 
-\item{mid.pos}{description}
+\item{mid.pos}{numeric. mid position of the annotation plot in respect to the y axis}
 
-\item{intron}{description}
+\item{intron}{logical. Whether to draw the introns in rectangles. If \code{FALSE}, introns are represented by lines}
 
-\item{...}{description}
+\item{...}{other parameters to be passed to link{plot.default}}
 }
 \description{
 This function plots nucleotide diversity \eqn{\theta[\pi]} and \eqn{\theta[\W]}
 calculated with \link{pi_theta} function and plots it above the annotation of
 the gene.
+}
+\examples{
+data(annotation)
+data(pi_and_theta)
+plot_pi_theta(pi_and_theta,annotation)
+
+
 }
 \author{
 Piyal Karunarathne

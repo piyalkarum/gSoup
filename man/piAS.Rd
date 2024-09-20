@@ -9,23 +9,39 @@ piAS(
   annotation,
   window = 100,
   gene_length = NULL,
-  pairwise_deletion = TRUE
+  pairwise_deletion = TRUE,
+  progress = TRUE
 )
 }
 \arguments{
-\item{algn}{description}
+\item{algn}{path to the alignment file in fasta format or the alignment imported as a DNAStringSet object}
 
-\item{annotation}{description}
+\item{annotation}{a data frame of the annotation of the gene or the sequence in the alignment.
+must have at least the three colums \code{type, start, end}}
 
-\item{window}{description}
+\item{window}{size of the sliding window. \code{default=100}}
 
-\item{gene_length}{description}
+\item{gene_length}{numeric. length of the complete gene according to the annotation. If not provided,
+the length will be determined from the annotation}
 
-\item{pairwise_deletion}{description}
+\item{pairwise_deletion}{logical. Whether to ignore gaps in the pairwise alignment. \code{default=TRUE}}
+
+\item{progress}{logical. Whether to show progress}
+}
+\value{
+Returns a list with synonymous polymorphism \eqn{\pi[S]} and non-synonymous polymorphis \eqn{\pi[A]},
+in a sliding window and average
 }
 \description{
 This function calculates sysnonymous and non-synonymous polymorphism
 from multiple sequnce alignment of coding regions of a gene
+}
+\examples{
+algn<-paste0(path.package("gSoup"),"/cds.fasta")
+data(annotation)
+AS<-piAS(algn,annotation)
+
+
 }
 \author{
 Piyal Karunarathne

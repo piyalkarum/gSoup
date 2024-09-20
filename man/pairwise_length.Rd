@@ -2,7 +2,7 @@
 % Please edit documentation in R/data_proc.R
 \name{pairwise_length}
 \alias{pairwise_length}
-\title{Remove all gaps from a pairwise sequence alignment}
+\title{Determine actual pairwise alignment length}
 \usage{
 pairwise_length(msa_path)
 }
@@ -16,6 +16,11 @@ A matrix of pairwise true alignment length without gaps
 This function removes gaps from a multiple sequence alignment
 with a pairwise assessment and returns a matrix with pairwise alignment
 length
+}
+\examples{
+fasta<-paste0(path.package("gSoup"),"/alignment.fasta")
+no_gap_lengths<-pairwise_length(fasta)
+
 }
 \author{
 Piyal Karunarathne

@@ -31,6 +31,13 @@ Returns chunks of multiple sequnce alignment split on a sliding window basis
 This function splits a multiple sequence alignment with a sliding window and saves
 chunks in fasta format
 }
+\examples{
+require(gSoup)
+fasta<-paste0(path.package("gSoup"),"/alignment.fasta")
+fs_splits<-fast_split_sw(fasta,export.fasta=FALSE)
+
+
+}
 \author{
 Piyal Karunarathne
 }

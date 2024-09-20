@@ -1,14 +1,18 @@
 ################# DEV SCRIPTS #####################
 ###################################################
 
+## saving data for examples -----------------------
+col.names<-c("seq","annotator","type","start","end","score","strand","phase","attribute")
+aug_out<-data.table::fread("/Users/piyalkaru/Desktop/DDORF/Ann/HMA4/augustus_out/Alyr/Aug5_24/Alyrata_all_AL3G52820_blast_extr_scaff3_7.4_intron_fixed_mesq_fixed.fas.aug.txt",col.names = col.names)
+annotation<-aug_out[grep("F1-14",aug_out$seq),c(3:5,7)]
+annotation$seq<-"gene1"
+save(annotation,file="/Users/piyalkaru/Desktop/DDORF/R/gSoup/data/annotation.rda",compress = "xz")
 
-#### checking script performance
-Rprof(tf <- "../performanceLog.log", memory.profiling = TRUE)
-tt<-depthVsSample1(cov.len = 100,sam.len = 100)## the script
-Rprof (NULL) ; print(summaryRprof(tf))
+pi_and_theta<-readRDS("/Users/piyalkaru/Desktop/DDORF/Ann/HMA4/stats/diversity/alyr/Alyr_scaff3_full_gene_pi_gen_Aug26_24_v3.rds")
+save(pi_and_theta,file="/Users/piyalkaru/Desktop/DDORF/R/gSoup/data/pi_and_theta.rda",compress="xz")
 
-
-
+piA_and_S<-readRDS("/Users/piyalkaru/Desktop/DDORF/Ann/HMA4/stats/diversity/ahal/Alyr_scaff3_HMA4_full_gene_pi_AS_v5.rds")
+save(piA_and_S,file="/Users/piyalkaru/Desktop/DDORF/R/gSoup/data/piA_and_S.rda",compress="xz")
 
 ########### compiling for github and CRAN ###############
 ###################################################

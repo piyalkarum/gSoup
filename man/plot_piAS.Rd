@@ -16,26 +16,34 @@ plot_piAS(
 )
 }
 \arguments{
-\item{pis}{description}
+\item{pis}{list containing \eqn{\pi[A/S]} from the output of \link{piAS} function}
 
-\item{annotation}{description}
+\item{annotation}{a data frame of the annotation of the gene or the sequence in the alignment.
+must have at least the three colums \code{type, start, end}}
 
-\item{anno.type}{description}
+\item{anno.type}{character. type of gene structure to be plotted (e.g. \code{exon} or \code{CDS})}
 
-\item{ratio}{description}
+\item{ratio}{logical. Whether to draw the \eqn{\pi[A]/\pi[S]} ratio plot}
 
-\item{log_scale}{description}
+\item{log_scale}{logical. If \code{ratio=TRUE}, whether to use the log2 scale}
 
-\item{ann.width}{description}
+\item{ann.width}{numerical. width of the gene annotation as a percentage at the bottom of the plot. \code{default=NULL}, determined as a percentage of the plot size}
 
-\item{mid.pos}{description}
+\item{mid.pos}{numeric. mid position of the annotation plot in respect to the y axis}
 
-\item{...}{description}
+\item{...}{other parameters to be passed to link{plot.default}}
 }
 \description{
 This function plots synonymous \eqn{\pi[S]} non-synonymous \eqn{\pi[A]} polymorphism
 and their ratio \eqn{\pi[A]/\pi[S]} calculated with \link{piAS} function
 and plots it above the annotation of the gene.
+}
+\examples{
+data(annotation)
+data(piA_and_S)
+plot_piAS(piA_and_S,annotation)
+
+
 }
 \author{
 Piyal Karunarathne

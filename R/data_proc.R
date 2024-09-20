@@ -9,6 +9,13 @@
 #' @importFrom ape as.DNAbin
 #' @importFrom methods as
 #'
+#' @returns Returns a DNAStringSet object of sequence alignment with gaps removed according to \code{ref}
+#'
+#' @examples
+#' fasta<-paste0(path.package("gSoup"),"/alignment.fasta")
+#' gp_removed<-rm_gaps(fasta,ref="Sample3",export.fasta=FALSE)
+#'
+#'
 #' @author Piyal Karunarathne
 #'
 #' @export
@@ -29,7 +36,7 @@ rm_gaps<-function(fast_path,ref,export.fasta=TRUE){
 
 
 
-#' Remove all gaps from a pairwise sequence alignment
+#' Determine actual pairwise alignment length
 #'
 #' This function removes gaps from a multiple sequence alignment
 #' with a pairwise assessment and returns a matrix with pairwise alignment
@@ -42,6 +49,10 @@ rm_gaps<-function(fast_path,ref,export.fasta=TRUE){
 #' @importFrom utils combn
 #'
 #' @returns A matrix of pairwise true alignment length without gaps
+#'
+#' @examples
+#' fasta<-paste0(path.package("gSoup"),"/alignment.fasta")
+#' no_gap_lengths<-pairwise_length(fasta)
 #'
 #' @author Piyal Karunarathne
 #'
@@ -87,6 +98,11 @@ pairwise_length<-function(msa_path){
 #'
 #' @returns Returns chunks of multiple sequnce alignment split on a sliding window basis
 #'
+#' @examples
+#' require(gSoup)
+#' fasta<-paste0(path.package("gSoup"),"/alignment.fasta")
+#' fs_splits<-fast_split_sw(fasta,export.fasta=FALSE)
+#'
 #'
 #' @export
 fast_split_sw<-function(fast_path,window=500,steps=100,export.fasta=TRUE,outpath=getwd()){
@@ -120,14 +136,14 @@ fast_split_sw<-function(fast_path,window=500,steps=100,export.fasta=TRUE,outpath
 #' This function extracts the DNA sequence and annotation information from GeneBank (.gb/.gbk) files
 #' and stores them in separate files
 #'
-#' @param gb_file description
-#' @param path description
-#' @param annotation description
-#' @param fasta_out description
-#' @param annotation_out description
-#' @param separate_fasta description
-#' @param DNAstringSet description
-#' @param xy_orient description
+#' @param gb_file path to the .gb(k) file
+#' @param path path the genebank file directory with multipel .gb(k) files
+#' @param annotation logical. Whether to extract annotation information
+#' @param fasta_out path to output fasta file
+#' @param annotation_out path to output the annotation file
+#' @param separate_fasta logical. Whether to export separate fasta files for multiple .gb(k) files
+#' @param DNAstringSet logical. Whether to return the fasta sequnces in a DNAStringSet object
+#' @param xy_orient logical. Whether to reorient the annotation when the sequence is on the negative strand
 #'
 #' @importFrom Biostrings readDNAStringSet DNAStringSet
 #' @importFrom stringr str_split_fixed str_flatten

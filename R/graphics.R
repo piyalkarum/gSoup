@@ -3,22 +3,27 @@
 #' Annotate gene structure
 #' This function annotates gene structure predictions based on .gff or other annotation outputs
 #'
-#' @param an.tab description
-#' @param genes description
-#' @param scale description
-#' @param orient description
-#' @param ann.width description
-#' @param up_down_stream description
-#' @param gname.col description
-#' @param intron desc
-#' @param draw.axis description
-#' @param label description
-#' @param justified description
-#' @param ... description
+#' @param an.tab data frame of annotation. Must have at least \code{seq} or any other names specified by
+#' \code{gname.col}, \code{type}, \code{start}, and \code{end}
+#' @param genes a vector of gene names to be plotted. These should be in the column specified by \code{gname.col}
+#' @param scale character. scale to be used in the plot, either **mb** for mega bases or **kb** for kilobases
+#' @param orient orientation of the plot, either **horizontal** or **vertical**
+#' @param ann.width numerical. width of the gene annotation as a percentage at the bottom of the plot. \code{default=0.4} for 40%
+#' @param up_down_stream logical. Whether to plot the up and downstream of the gene
+#' @param gname.col character. name of the column that contains the gene names in \code{genes}
+#' @param intron logical. Whether to plot introns as filled rectangles. If \code{FALSE}, introns are represented by a line
+#' @param draw.axis logical. Whether to draw the axis
+#' @param label logical. Whether to draw the labels of the gene on the x/y axis.
+#' @param justified logical. Whether to justify the beginning of the gene to the x/y axis
+#' @param ... any other parameters to be passed to \link{plot.default}
 #'
 #' @importFrom graphics abline axis lines mtext par polygon
 #'
 #' @author Piyal Karunarathne
+#'
+#' @examples
+#' data(annotation)
+#' GeneAnno(annotation)
 #'
 #'
 #' @export
@@ -27,6 +32,7 @@ GeneAnno<-function(an.tab,genes=NULL,scale=c("mb","kb"),orient=c("horizontal","v
   if(is.null(ll$col)){ll$col<-c("grey30","grey80","white")}
   if(is.null(ll$main)){ll$main<-""}
   if(is.null(ll$labels)){ll$labels<-as.character(an.tab[1,1])}
+  scale<-match.arg(scale)
   opars<-par("mar")
   on.exit(par(mar=opars))
   orient<-match.arg(orient)
@@ -183,20 +189,27 @@ GeneAnno<-function(an.tab,genes=NULL,scale=c("mb","kb"),orient=c("horizontal","v
 #' calculated with \link{pi_theta} function and plots it above the annotation of
 #' the gene.
 #'
-#' @param Pi description
-#' @param annotation description
-#' @param anno.type description
-#' @param ratio description
-#' @param log_scale description
-#' @param ann.width description
-#' @param mid.pos description
-#' @param intron description
-#' @param ... description
+#' @param Pi list containing \eqn{\pi} from the output of \link{pi_theta} function
+#' @param annotation a data frame of the annotation of the gene or the sequence in the alignment.
+#' must have at least the three colums \code{type, start, end}
+#' @param anno.type character. type of gene structure to be plotted (e.g. \code{exon} or \code{CDS})
+#' @param ratio logical. Whether to draw the \eqn{\pi/\theta} ratio plot
+#' @param log_scale logical. If \code{ratio=TRUE}, whether to use the log2 scale
+#' @param ann.width numerical. width of the gene annotation as a percentage at the bottom of the plot. \code{default=NULL}, determined as a percentage of the plot size
+#' @param mid.pos numeric. mid position of the annotation plot in respect to the y axis
+#' @param intron logical. Whether to draw the introns in rectangles. If \code{FALSE}, introns are represented by lines
+#' @param ... other parameters to be passed to link{plot.default}
 #'
 #' @importFrom graphics layout legend rect title
 #' @importFrom grDevices col2rgb rgb
 #'
 #' @author Piyal Karunarathne
+#'
+#' @examples
+#' data(annotation)
+#' data(pi_and_theta)
+#' plot_pi_theta(pi_and_theta,annotation)
+#'
 #'
 #' @export
 plot_pi_theta<-function(Pi,annotation,anno.type=c("exon","CDS"),ratio=FALSE,log_scale=TRUE,ann.width=NULL,mid.pos=NULL,intron=FALSE,...){
@@ -309,19 +322,26 @@ plot_pi_theta<-function(Pi,annotation,anno.type=c("exon","CDS"),ratio=FALSE,log_
 #' and their ratio \eqn{\pi[A]/\pi[S]} calculated with \link{piAS} function
 #' and plots it above the annotation of the gene.
 #'
-#' @param pis description
-#' @param annotation description
-#' @param anno.type description
-#' @param ratio description
-#' @param log_scale description
-#' @param ann.width description
-#' @param mid.pos description
-#' @param ... description
+#' @param pis list containing \eqn{\pi[A/S]} from the output of \link{piAS} function
+#' @param annotation a data frame of the annotation of the gene or the sequence in the alignment.
+#' must have at least the three colums \code{type, start, end}
+#' @param anno.type character. type of gene structure to be plotted (e.g. \code{exon} or \code{CDS})
+#' @param ratio logical. Whether to draw the \eqn{\pi[A]/\pi[S]} ratio plot
+#' @param log_scale logical. If \code{ratio=TRUE}, whether to use the log2 scale
+#' @param ann.width numerical. width of the gene annotation as a percentage at the bottom of the plot. \code{default=NULL}, determined as a percentage of the plot size
+#' @param mid.pos numeric. mid position of the annotation plot in respect to the y axis
+#' @param ... other parameters to be passed to link{plot.default}
 #'
 #' @importFrom graphics layout legend rect title
 #' @importFrom grDevices col2rgb rgb
 #'
 #' @author Piyal Karunarathne
+#'
+#' @examples
+#' data(annotation)
+#' data(piA_and_S)
+#' plot_piAS(piA_and_S,annotation)
+#'
 #'
 #' @export
 plot_piAS<-function(pis,annotation,anno.type=c("CDS","exon"),ratio=FALSE,log_scale=TRUE,ann.width=NULL,mid.pos=NULL,...){

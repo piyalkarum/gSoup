@@ -14,8 +14,17 @@ rm_gaps(fast_path, ref, export.fasta = TRUE)
 \item{export.fasta}{logical/path. whether to export gaps removed alignment in fasta format.
 If TRUE, it will be saved to the working directory, or to the path provided in \code{export.fasta}}
 }
+\value{
+Returns a DNAStringSet object of sequence alignment with gaps removed according to \code{ref}
+}
 \description{
 This function removes gaps from fasta multiple sequence alignment to have no gaps in the reference sequences
+}
+\examples{
+fasta<-paste0(path.package("gSoup"),"/alignment.fasta")
+gp_removed<-rm_gaps(fasta,ref="Sample3",export.fasta=FALSE)
+
+
 }
 \author{
 Piyal Karunarathne

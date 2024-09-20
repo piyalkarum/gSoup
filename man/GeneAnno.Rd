@@ -21,33 +21,40 @@ GeneAnno(
 )
 }
 \arguments{
-\item{an.tab}{description}
+\item{an.tab}{data frame of annotation. Must have at least \code{seq} or any other names specified by
+\code{gname.col}, \code{type}, \code{start}, and \code{end}}
 
-\item{genes}{description}
+\item{genes}{a vector of gene names to be plotted. These should be in the column specified by \code{gname.col}}
 
-\item{scale}{description}
+\item{scale}{character. scale to be used in the plot, either \strong{mb} for mega bases or \strong{kb} for kilobases}
 
-\item{orient}{description}
+\item{orient}{orientation of the plot, either \strong{horizontal} or \strong{vertical}}
 
-\item{ann.width}{description}
+\item{ann.width}{numerical. width of the gene annotation as a percentage at the bottom of the plot. \code{default=0.4} for 40\%}
 
-\item{up_down_stream}{description}
+\item{up_down_stream}{logical. Whether to plot the up and downstream of the gene}
 
-\item{gname.col}{description}
+\item{gname.col}{character. name of the column that contains the gene names in \code{genes}}
 
-\item{intron}{desc}
+\item{intron}{logical. Whether to plot introns as filled rectangles. If \code{FALSE}, introns are represented by a line}
 
-\item{draw.axis}{description}
+\item{draw.axis}{logical. Whether to draw the axis}
 
-\item{label}{description}
+\item{label}{logical. Whether to draw the labels of the gene on the x/y axis.}
 
-\item{justified}{description}
+\item{justified}{logical. Whether to justify the beginning of the gene to the x/y axis}
 
-\item{...}{description}
+\item{...}{any other parameters to be passed to \link{plot.default}}
 }
 \description{
 Annotate gene structure
 This function annotates gene structure predictions based on .gff or other annotation outputs
+}
+\examples{
+data(annotation)
+GeneAnno(annotation)
+
+
 }
 \author{
 Piyal Karunarathne
