@@ -39,17 +39,9 @@ std::string codon_to_aa(const std::string& codon, const std::map<std::string, st
   }
 }
 
-// Jukes-Cantor correction
-double jukes_cantor_correction(double pi) {
-  if (pi >= 0.75) {
-    return NA_REAL; // Jukes-Cantor correction is undefined for pi >= 0.75
-  }
-  return -(3.0 / 4.0) * log(1.0 - (4.0 / 3.0) * pi);
-}
-
 // Function to calculate synonymous and nonsynonymous differences and total sites
 // [[Rcpp::export]]
-List calculate_pi(CharacterMatrix alignment) {
+NumericVector calculate_pi(CharacterMatrix alignment) {
   int n = alignment.nrow();
   int len = alignment.ncol();
   double total_syn_sites = 0.0;
@@ -79,14 +71,11 @@ List calculate_pi(CharacterMatrix alignment) {
         std::transform(codon1.begin(), codon1.end(), codon1.begin(), ::toupper);
         std::transform(codon2.begin(), codon2.end(), codon2.begin(), ::toupper);
 
-        // Skip codons with stop codons
-        if (codon1 == "X" || codon2 == "X") {
-          continue;
-        }
         
         std::string aa1 = codon_to_aa(codon1, genetic_code);
         std::string aa2 = codon_to_aa(codon2, genetic_code);
 
+        
         // Calculate synonymous and nonsynonymous sites for this codon
         double codon_syn_sites = 0.0;
         double codon_nonsyn_sites = 0.0;
@@ -120,14 +109,16 @@ List calculate_pi(CharacterMatrix alignment) {
         }
 
         // Add to the sequence-level totals
-        seq_syn_sites += codon_syn_sites / 2.0;
-        seq_nonsyn_sites += codon_nonsyn_sites / 2.0;
+        seq_syn_sites += codon_syn_sites / 2.0 ;
+        seq_nonsyn_sites += codon_nonsyn_sites / 2.0 ;
 
         // Count differences
-        if (aa1 != aa2) {
+        if (aa1 != aa2 || aa1 == "X" || aa2 == "X") {
           seq_nonsyn_diffs += 1;
-        } else if (codon1 != codon2) {
+        } else {
+        if (codon1 != codon2) {
           seq_syn_diffs += 1;
+        }
         }
       }
 
@@ -142,19 +133,11 @@ List calculate_pi(CharacterMatrix alignment) {
   }
 
   if (valid_pairs == 0 || total_syn_sites == 0 || total_nonsyn_sites == 0) {
-    return List::create(NumericVector::create(NA_REAL, NA_REAL), NumericVector::create(NA_REAL, NA_REAL));
+    return NumericVector::create(NA_REAL, NA_REAL);
   }
 
-  double pi_syn = syn_diffs / total_syn_sites;
-  double pi_nonsyn = nonsyn_diffs / total_nonsyn_sites;
+  double pi_syn = syn_diffs /3.0 / total_syn_sites;
+  double pi_nonsyn = nonsyn_diffs / 3.0 / total_nonsyn_sites;
 
-  double corrected_pi_syn = jukes_cantor_correction(pi_syn);
-  double corrected_pi_nonsyn = jukes_cantor_correction(pi_nonsyn);
-
-  return List::create(
-    Named("pi_syn") = pi_syn,
-    Named("pi_nonsyn") = pi_nonsyn,
-    Named("corrected_pi_syn") = corrected_pi_syn,
-    Named("corrected_pi_nonsyn") = corrected_pi_nonsyn
-  );
+  return NumericVector::create(pi_syn, pi_nonsyn);
 }

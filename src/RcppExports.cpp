@@ -23,7 +23,7 @@ BEGIN_RCPP
 END_RCPP
 }
 // calculate_pi
-NumericVector calculate_pi(CharacterMatrix alignment);
+List calculate_pi(CharacterMatrix alignment);
 RcppExport SEXP _gSoup_calculate_pi(SEXP alignmentSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;

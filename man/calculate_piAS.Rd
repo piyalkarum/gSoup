@@ -6,11 +6,12 @@
 \usage{
 calculate_piAS(
   algn,
-  annotation,
+  annotation = NULL,
   window = 100,
   gene_length = NULL,
   pairwise_deletion = TRUE,
-  progress = TRUE
+  progress = TRUE,
+  JC_correct = TRUE
 )
 }
 \arguments{
@@ -27,6 +28,8 @@ the length will be determined from the annotation}
 \item{pairwise_deletion}{logical. Whether to ignore gaps in the pairwise alignment. \code{default=TRUE}}
 
 \item{progress}{logical. Whether to show progress}
+
+\item{JC_correct}{logical. Whether to apply a Jukes-Cantor correction to the calculations}
 }
 \value{
 Returns a list with synonymous polymorphism \eqn{\pi[S]} and non-synonymous polymorphis \eqn{\pi[A]},
@@ -34,7 +37,8 @@ in a sliding window and average
 }
 \description{
 This function calculates sysnonymous and non-synonymous polymorphism
-from multiple sequnce alignment of coding regions of a gene
+from multiple sequnce alignment of coding regions of a gene and (if \emph{annotation} is provided)
+assigns the values to each exon along a given gene sequence
 }
 \examples{
 algn<-paste0(path.package("gSoup"),"/cds.fasta")
