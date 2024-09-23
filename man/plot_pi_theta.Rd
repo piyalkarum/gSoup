@@ -17,7 +17,7 @@ plot_pi_theta(
 )
 }
 \arguments{
-\item{Pi}{list containing \eqn{\pi} from the output of \link{pi_theta} function}
+\item{Pi}{list containing \eqn{\pi} from the output of \link{calculate_pi_theta} function}
 
 \item{annotation}{a data frame of the annotation of the gene or the sequence in the alignment.
 must have at least the three colums \code{type, start, end}}
@@ -37,8 +37,8 @@ must have at least the three colums \code{type, start, end}}
 \item{...}{other parameters to be passed to link{plot.default}}
 }
 \description{
-This function plots nucleotide diversity \eqn{\theta[\pi]} and \eqn{\theta[\W]}
-calculated with \link{pi_theta} function and plots it above the annotation of
+This function plots nucleotide diversity \eqn{\theta_\pi} and \eqn{\theta_W}
+calculated with \link{calculate_pi_theta} function and plots it above the annotation of
 the gene.
 }
 \examples{

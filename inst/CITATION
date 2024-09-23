@@ -1,0 +1,12 @@
+citHeader("To cite the R package in publications, please use:")
+
+citation<-bibentry(
+  bibtype  = "Manual",
+  title    = "gSoup: An R package to perform molecular evolution analysis",
+  author   = "Piyal Karunarathne",
+  year     = "2024",
+  note     = "R package version 0.9.000",
+  url      = "https://github.com/piyalkarum/gSoup"
+)
+
+citFooter("Thank you for citing my work")

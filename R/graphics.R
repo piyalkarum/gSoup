@@ -1,13 +1,15 @@
 ################## GRAPHICS ############################
 
 #' Annotate gene structure
+#'
+#'
 #' This function annotates gene structure predictions based on .gff or other annotation outputs
 #'
 #' @param an.tab data frame of annotation. Must have at least \code{seq} or any other names specified by
 #' \code{gname.col}, \code{type}, \code{start}, and \code{end}
 #' @param genes a vector of gene names to be plotted. These should be in the column specified by \code{gname.col}
-#' @param scale character. scale to be used in the plot, either **mb** for mega bases or **kb** for kilobases
-#' @param orient orientation of the plot, either **horizontal** or **vertical**
+#' @param scale character. scale to be used in the plot, either *mb* for mega bases or *kb* for kilobases
+#' @param orient orientation of the plot, either *horizontal* or *vertical*
 #' @param ann.width numerical. width of the gene annotation as a percentage at the bottom of the plot. \code{default=0.4} for 40%
 #' @param up_down_stream logical. Whether to plot the up and downstream of the gene
 #' @param gname.col character. name of the column that contains the gene names in \code{genes}
@@ -185,11 +187,12 @@ GeneAnno<-function(an.tab,genes=NULL,scale=c("mb","kb"),orient=c("horizontal","v
 
 #' Plot nucleotide diversity
 #'
-#' This function plots nucleotide diversity \eqn{\theta[\pi]} and \eqn{\theta[\W]}
-#' calculated with \link{pi_theta} function and plots it above the annotation of
+#'
+#' This function plots nucleotide diversity \eqn{\theta_\pi} and \eqn{\theta_W}
+#' calculated with \link{calculate_pi_theta} function and plots it above the annotation of
 #' the gene.
 #'
-#' @param Pi list containing \eqn{\pi} from the output of \link{pi_theta} function
+#' @param Pi list containing \eqn{\pi} from the output of \link{calculate_pi_theta} function
 #' @param annotation a data frame of the annotation of the gene or the sequence in the alignment.
 #' must have at least the three colums \code{type, start, end}
 #' @param anno.type character. type of gene structure to be plotted (e.g. \code{exon} or \code{CDS})
@@ -318,11 +321,12 @@ plot_pi_theta<-function(Pi,annotation,anno.type=c("exon","CDS"),ratio=FALSE,log_
 
 #' Plot synonymous non-synonymous polymorphism
 #'
+#'
 #' This function plots synonymous \eqn{\pi[S]} non-synonymous \eqn{\pi[A]} polymorphism
-#' and their ratio \eqn{\pi[A]/\pi[S]} calculated with \link{piAS} function
+#' and their ratio \eqn{\pi[A]/\pi[S]} calculated with \link{calculate_piAS} function
 #' and plots it above the annotation of the gene.
 #'
-#' @param pis list containing \eqn{\pi[A/S]} from the output of \link{piAS} function
+#' @param pis list containing \eqn{\pi[A/S]} from the output of \link{calculate_piAS} function
 #' @param annotation a data frame of the annotation of the gene or the sequence in the alignment.
 #' must have at least the three colums \code{type, start, end}
 #' @param anno.type character. type of gene structure to be plotted (e.g. \code{exon} or \code{CDS})

@@ -16,7 +16,7 @@ plot_piAS(
 )
 }
 \arguments{
-\item{pis}{list containing \eqn{\pi[A/S]} from the output of \link{piAS} function}
+\item{pis}{list containing \eqn{\pi[A/S]} from the output of \link{calculate_piAS} function}
 
 \item{annotation}{a data frame of the annotation of the gene or the sequence in the alignment.
 must have at least the three colums \code{type, start, end}}
@@ -35,7 +35,7 @@ must have at least the three colums \code{type, start, end}}
 }
 \description{
 This function plots synonymous \eqn{\pi[S]} non-synonymous \eqn{\pi[A]} polymorphism
-and their ratio \eqn{\pi[A]/\pi[S]} calculated with \link{piAS} function
+and their ratio \eqn{\pi[A]/\pi[S]} calculated with \link{calculate_piAS} function
 and plots it above the annotation of the gene.
 }
 \examples{

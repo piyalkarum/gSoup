@@ -25,3 +25,12 @@
 #'
 'piA_and_S'
 
+
+
+#' citation
+#'
+#' @title Citation for gSoup
+#' @description
+#' How to cite gSoup
+#' @export
+citation("gSoup")

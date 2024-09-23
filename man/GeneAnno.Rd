@@ -2,8 +2,7 @@
 % Please edit documentation in R/graphics.R
 \name{GeneAnno}
 \alias{GeneAnno}
-\title{Annotate gene structure
-This function annotates gene structure predictions based on .gff or other annotation outputs}
+\title{Annotate gene structure}
 \usage{
 GeneAnno(
   an.tab,
@@ -26,9 +25,9 @@ GeneAnno(
 
 \item{genes}{a vector of gene names to be plotted. These should be in the column specified by \code{gname.col}}
 
-\item{scale}{character. scale to be used in the plot, either \strong{mb} for mega bases or \strong{kb} for kilobases}
+\item{scale}{character. scale to be used in the plot, either \emph{mb} for mega bases or \emph{kb} for kilobases}
 
-\item{orient}{orientation of the plot, either \strong{horizontal} or \strong{vertical}}
+\item{orient}{orientation of the plot, either \emph{horizontal} or \emph{vertical}}
 
 \item{ann.width}{numerical. width of the gene annotation as a percentage at the bottom of the plot. \code{default=0.4} for 40\%}
 
@@ -47,7 +46,6 @@ GeneAnno(
 \item{...}{any other parameters to be passed to \link{plot.default}}
 }
 \description{
-Annotate gene structure
 This function annotates gene structure predictions based on .gff or other annotation outputs
 }
 \examples{

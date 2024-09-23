@@ -19,5 +19,5 @@ if \code{TRUE}, the alignment is considered to be only coding sequence}
 This function calculates genetic diversity statistics
 (e.g., \eqn{\pi, \theta, \pi[A], \pi[S]}, and Tajima's D)
 for a complete sequence alignment. If you need to calculate these statistics
-with a sliding window use the respective functions. e.g., \link{pi_theta}, \link{piAS}
+with a sliding window use the respective functions. e.g., \link{calculate_pi_theta}, \link{calculate_piAS}
 }

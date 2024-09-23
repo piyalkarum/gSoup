@@ -28,11 +28,11 @@
 #' @examples
 #' algn<-paste0(path.package("gSoup"),"/cds.fasta")
 #' data(annotation)
-#' AS<-piAS(algn,annotation)
+#' AS<-calculate_piAS(algn,annotation)
 #'
 #'
 #' @export
-piAS <- function(algn, annotation, window = 100, gene_length = NULL, pairwise_deletion = TRUE, progress=TRUE) {
+calculate_piAS <- function(algn, annotation, window = 100, gene_length = NULL, pairwise_deletion = TRUE, progress=TRUE) {
   if(is.character(algn)){algn<-readDNAStringSet(algn)}
   wind <- window
   alignment <- as.matrix(as.DNAbin(algn))
@@ -130,12 +130,12 @@ piAS <- function(algn, annotation, window = 100, gene_length = NULL, pairwise_de
 #' total number of sites, number of segregating sites and Tajima's D in a sliding window and average
 #' @examples
 #' fasta<-paste0(path.package("gSoup"), "/alignment.fasta")
-#' PT<-pi_theta(fasta)
+#' PT<-calculate_pi_theta(fasta)
 #'
 #'
 #'
 #' @export
-pi_theta<-function(fast_path,window=100,pairwise_deletion=TRUE,plot=TRUE,progress=TRUE,...){
+calculate_pi_theta<-function(fast_path,window=100,pairwise_deletion=TRUE,plot=TRUE,progress=TRUE,...){
   if(is.character(fast_path)){algn<-readDNAStringSet(fast_path)}else{algn<-fast_path}
   ll<-list(...)
   if(is.null(ll$main)){ll$main<-""}
@@ -255,7 +255,7 @@ TajimaD <- function(sfs) {
 #' This function calculates genetic diversity statistics
 #' (e.g., \eqn{\pi, \theta, \pi[A], \pi[S]}, and Tajima's D)
 #' for a complete sequence alignment. If you need to calculate these statistics
-#' with a sliding window use the respective functions. e.g., \link{pi_theta}, \link{piAS}
+#' with a sliding window use the respective functions. e.g., \link{calculate_pi_theta}, \link{calculate_piAS}
 #'
 #' @param alignment multiple sequence alignment file path or
 #' a DNAStringSet object
