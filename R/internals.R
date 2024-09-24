@@ -121,17 +121,6 @@ rolling_mean <- function(x, window_size) {
   return(result)
 }
 
-rolling_mean0 <- function(x, window_size) {
-  result <- rep(NA, length(x))
-  half_window <- floor(window_size / 2)
-
-  for (i in (half_window + 1):(length(x) - half_window)) {
-    window <- x[(i - half_window):(i + half_window)]
-    result[i] <- mean(window, na.rm = TRUE)  # Ignore NA values
-  }
-  return(result)
-}
-
 
 # make a given vector of colors transparent to a desired opacity
 makeTransparent = function(..., alpha=0.5) {
