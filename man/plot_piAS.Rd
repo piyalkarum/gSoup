@@ -12,6 +12,7 @@ plot_piAS(
   log_scale = TRUE,
   ann.width = NULL,
   mid.pos = NULL,
+  window_size = 2,
   ...
 )
 }
@@ -30,6 +31,8 @@ must have at least the three colums \code{type, start, end}}
 \item{ann.width}{numerical. width of the gene annotation as a percentage at the bottom of the plot. \code{default=NULL}, determined as a percentage of the plot size}
 
 \item{mid.pos}{numeric. mid position of the annotation plot in respect to the y axis}
+
+\item{window_size}{numeric. Window size for smoothing the curve}
 
 \item{...}{other parameters to be passed to link{plot.default}}
 }

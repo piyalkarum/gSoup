@@ -334,6 +334,7 @@ plot_pi_theta<-function(Pi,annotation,anno.type=c("exon","CDS"),ratio=FALSE,log_
 #' @param log_scale logical. If \code{ratio=TRUE}, whether to use the log2 scale
 #' @param ann.width numerical. width of the gene annotation as a percentage at the bottom of the plot. \code{default=NULL}, determined as a percentage of the plot size
 #' @param mid.pos numeric. mid position of the annotation plot in respect to the y axis
+#' @param window_size numeric. Window size for smoothing the curve
 #' @param ... other parameters to be passed to link{plot.default}
 #'
 #' @importFrom graphics layout legend rect title
@@ -348,7 +349,7 @@ plot_pi_theta<-function(Pi,annotation,anno.type=c("exon","CDS"),ratio=FALSE,log_
 #'
 #'
 #' @export
-plot_piAS<-function(pis,annotation,anno.type=c("CDS","exon"),ratio=FALSE,log_scale=TRUE,ann.width=NULL,mid.pos=NULL,...){
+plot_piAS<-function(pis,annotation,anno.type=c("CDS","exon"),ratio=FALSE,log_scale=TRUE,ann.width=NULL,mid.pos=NULL,window_size=2,...){
   ll<-list(...)
   opars<-par(no.readonly = TRUE)
   on.exit(par(opars))
@@ -359,8 +360,8 @@ plot_piAS<-function(pis,annotation,anno.type=c("CDS","exon"),ratio=FALSE,log_sca
   if(is.null(ll$main)){ll$main<-""}
   anno.type<-match.arg(anno.type)
 
-  smooth_A <- na.omit(rolling_mean(pis$pi_A, window_size=1))
-  smooth_S<-na.omit(rolling_mean(pis$pi_S,window_size=1))
+  smooth_A <- (rolling_mean(na.omit(pis$pi_A), window_size=window_size))
+  smooth_S<-(rolling_mean(na.omit(pis$pi_S),window_size=window_size))
   if(log_scale){
     rat<-suppressWarnings(log2(smooth_A/smooth_S))
   } else {

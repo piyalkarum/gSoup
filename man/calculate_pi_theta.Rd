@@ -36,8 +36,8 @@ This function calculates nucleotide diversity and Watterson's theta
 from a multiple sequnce alignment
 }
 \examples{
-fasta<-paste0(path.package("gSoup"), "/alignment.fasta")
-PT<-calculate_pi_theta(fasta)
+\dontrun{fasta<-paste0(path.package("gSoup"), "/alignment.fasta")
+PT<-calculate_pi_theta(fasta)}
 
 
 

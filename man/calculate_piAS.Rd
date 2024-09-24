@@ -41,9 +41,9 @@ from multiple sequnce alignment of coding regions of a gene and (if \emph{annota
 assigns the values to each exon along a given gene sequence
 }
 \examples{
-algn<-paste0(path.package("gSoup"),"/cds.fasta")
+\dontrun{algn<-paste0(path.package("gSoup"),"/cds.fasta")
 data(annotation)
-AS<-calculate_piAS(algn,annotation)
+AS<-calculate_piAS(algn,annotation)}
 
 
 }

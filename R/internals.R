@@ -110,6 +110,20 @@ create_arrow_polygon <- function(start, end, mid.pos=-0.02, arrow_head_length = 
 rolling_mean <- function(x, window_size) {
   result <- rep(NA, length(x))
   half_window <- floor(window_size / 2)
+  for (i in (half_window + 1):(length(x) - half_window)) {
+    window <- x[(i - half_window):(i + half_window)]
+    result[i] <- mean(window, na.rm = TRUE)
+  }
+  # Pad the beginning and end with the original values to maintain length
+  result[1:half_window] <- x[1:half_window]
+  result[(length(x) - half_window + 1):length(x)] <- x[(length(x) - half_window + 1):length(x)]
+
+  return(result)
+}
+
+rolling_mean0 <- function(x, window_size) {
+  result <- rep(NA, length(x))
+  half_window <- floor(window_size / 2)
 
   for (i in (half_window + 1):(length(x) - half_window)) {
     window <- x[(i - half_window):(i + half_window)]
