@@ -201,6 +201,7 @@ GeneAnno<-function(an.tab,genes=NULL,scale=c("mb","kb"),orient=c("horizontal","v
 #' @param ann.width numerical. width of the gene annotation as a percentage at the bottom of the plot. \code{default=NULL}, determined as a percentage of the plot size
 #' @param mid.pos numeric. mid position of the annotation plot in respect to the y axis
 #' @param intron logical. Whether to draw the introns in rectangles. If \code{FALSE}, introns are represented by lines
+#' @param window_size numeric. Window size for smoothing the curve
 #' @param ... other parameters to be passed to link{plot.default}
 #'
 #' @importFrom graphics layout legend rect title
@@ -215,7 +216,7 @@ GeneAnno<-function(an.tab,genes=NULL,scale=c("mb","kb"),orient=c("horizontal","v
 #'
 #'
 #' @export
-plot_pi_theta<-function(Pi,annotation,anno.type=c("exon","CDS"),ratio=FALSE,log_scale=TRUE,ann.width=NULL,mid.pos=NULL,intron=FALSE,...){
+plot_pi_theta<-function(Pi,annotation,anno.type=c("exon","CDS"),ratio=FALSE,log_scale=TRUE,ann.width=NULL,mid.pos=NULL,intron=FALSE,window_size=10,...){
   ll<-list(...)
   opars<-par(no.readonly = TRUE)
   on.exit(par(opars))
@@ -226,8 +227,8 @@ plot_pi_theta<-function(Pi,annotation,anno.type=c("exon","CDS"),ratio=FALSE,log_
   if(is.null(ll$main)){ll$main<-""}
   anno.type<-match.arg(anno.type)
 
-  smooth_pi<-rolling_mean(Pi$window$pi,window_size=1)
-  smooth_theta<-rolling_mean(Pi$window$theta_w,window_size=1)
+  smooth_pi<-rolling_mean(Pi$window$pi,window_size=window_size)
+  smooth_theta<-rolling_mean(Pi$window$theta_w,window_size=window_size)
   if(log_scale){
     rat<-suppressWarnings(log2(smooth_pi/smooth_theta))
   } else {
@@ -349,7 +350,7 @@ plot_pi_theta<-function(Pi,annotation,anno.type=c("exon","CDS"),ratio=FALSE,log_
 #'
 #'
 #' @export
-plot_piAS<-function(pis,annotation,anno.type=c("CDS","exon"),ratio=FALSE,log_scale=TRUE,ann.width=NULL,mid.pos=NULL,window_size=2,...){
+plot_piAS<-function(pis,annotation,anno.type=c("CDS","exon"),ratio=FALSE,log_scale=TRUE,ann.width=NULL,mid.pos=NULL,window_size=10,...){
   ll<-list(...)
   opars<-par(no.readonly = TRUE)
   on.exit(par(opars))

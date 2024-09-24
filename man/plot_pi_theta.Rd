@@ -13,6 +13,7 @@ plot_pi_theta(
   ann.width = NULL,
   mid.pos = NULL,
   intron = FALSE,
+  window_size = 10,
   ...
 )
 }
@@ -33,6 +34,8 @@ must have at least the three colums \code{type, start, end}}
 \item{mid.pos}{numeric. mid position of the annotation plot in respect to the y axis}
 
 \item{intron}{logical. Whether to draw the introns in rectangles. If \code{FALSE}, introns are represented by lines}
+
+\item{window_size}{numeric. Window size for smoothing the curve}
 
 \item{...}{other parameters to be passed to link{plot.default}}
 }

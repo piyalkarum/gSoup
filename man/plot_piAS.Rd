@@ -12,7 +12,7 @@ plot_piAS(
   log_scale = TRUE,
   ann.width = NULL,
   mid.pos = NULL,
-  window_size = 2,
+  window_size = 10,
   ...
 )
 }
