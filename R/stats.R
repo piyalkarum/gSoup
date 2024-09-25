@@ -115,8 +115,6 @@ calculate_piAS <- function(algn, annotation=NULL, window = 100, gene_length = NU
 }
 
 
-
-
 #' Calculate nucleotide diversity \eqn{\theta[\pi]}
 #'
 #' This function calculates nucleotide diversity and Watterson's theta
