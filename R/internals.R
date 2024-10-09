@@ -11,7 +11,7 @@ colorize <- function(x, color) {
 
 
 #function to split only one file
-gb2info<-function(gb_file,annotation=TRUE,fasta_out=NULL,separate_fasta=FALSE,DNAstringSet=TRUE,xy_orient=FALSE){
+gb2info<-function(gb_file,annotation=TRUE,fasta_out=NULL,separate_fasta=FALSE,DNAstringSet=TRUE,LR_orient=FALSE){
   input <- readLines(gb_file)
   head <- input[1]
   head <- unlist(strsplit(head, split = " "))
@@ -46,7 +46,7 @@ gb2info<-function(gb_file,annotation=TRUE,fasta_out=NULL,separate_fasta=FALSE,DN
     flout<-na.omit(flout)
     source_name<-gsub(".gb*","",basename(gb_file))
     ann_feat<-data.frame(source=source_name,type=flout[,1],start=as.numeric(flout[,2]),end=as.numeric(flout[,3]),strand=flout[,4])
-    if(xy_orient){
+    if(LR_orient){
       if(any(ann_feat$strand=="-")){
         gene_length <- ann_feat[ann_feat$type=="source" |ann_feat$type=="gene" ,"end"]
         annotation_reverse <- ann_feat

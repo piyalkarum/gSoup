@@ -12,7 +12,7 @@ gb2sense(
   annotation_out = NULL,
   separate_fasta = FALSE,
   DNAstringSet = TRUE,
-  xy_orient = FALSE
+  LR_orient = FALSE
 )
 }
 \arguments{
@@ -30,7 +30,7 @@ gb2sense(
 
 \item{DNAstringSet}{logical. Whether to return the fasta sequnces in a DNAStringSet object}
 
-\item{xy_orient}{logical. Whether to reorient the annotation when the sequence is on the negative strand}
+\item{LR_orient}{logical. Whether to reorient the annotation when the sequence is on the negative strand}
 }
 \value{
 Returns a DNAStringSet object of fasta sequnces and data frame of annotations

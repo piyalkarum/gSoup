@@ -5,8 +5,9 @@ Version: 0.9.900
 Date: 2024-09-11
 Authors@R: c(person(given="Piyal",family="Karunarathne", email="piyalkarumail@yahoo.com", role = c("aut", "cre"),comment = c(ORCID = "0000-0002-1934-145X")))
 Maintainer: Piyal Karunarathne <piyalkarumail@yahoo.com>
-Description: I wrote this package to all bioinformatic tools in one place because I was tired of having to switch between different platforms to perform basic (and advance) population genetics and molecular evolution analyses.
+Description: I wrote this package to assemble all essential bioinformatic tools in one place because I was tired of having to switch between different platforms to perform basic (and advance) population genetics and molecular evolution analyses.
 License: AGPL (>= 3)
+biocViews: Software
 Imports: Rcpp, Biostrings, ape, seqinr, methods, stringr, stats, utils
 LinkingTo: Rcpp
 Encoding: UTF-8

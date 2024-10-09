@@ -16,6 +16,8 @@ GeneAnno(
   draw.axis = TRUE,
   label = TRUE,
   justified = TRUE,
+  LR_orient = TRUE,
+  output = FALSE,
   ...
 )
 }
@@ -42,6 +44,10 @@ GeneAnno(
 \item{label}{logical. Whether to draw the labels of the gene on the x/y axis.}
 
 \item{justified}{logical. Whether to justify the beginning of the gene to the x/y axis}
+
+\item{LR_orient}{logical. Whether to re-orient annotations to Left to Right direction where it is the opposite.}
+
+\item{output}{logical. Whether to output the annotation table}
 
 \item{...}{any other parameters to be passed to \link{plot.default}}
 }

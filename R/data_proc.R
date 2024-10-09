@@ -143,7 +143,7 @@ fast_split_sw<-function(fast_path,window=500,steps=100,export.fasta=TRUE,outpath
 #' @param annotation_out path to output the annotation file
 #' @param separate_fasta logical. Whether to export separate fasta files for multiple .gb(k) files
 #' @param DNAstringSet logical. Whether to return the fasta sequnces in a DNAStringSet object
-#' @param xy_orient logical. Whether to reorient the annotation when the sequence is on the negative strand
+#' @param LR_orient logical. Whether to reorient the annotation when the sequence is on the negative strand
 #'
 #' @importFrom Biostrings readDNAStringSet DNAStringSet
 #' @importFrom stringr str_split_fixed str_flatten
@@ -160,11 +160,11 @@ fast_split_sw<-function(fast_path,window=500,steps=100,export.fasta=TRUE,outpath
 #' gb_out<-gb2sense(gb_file = "./gb_files/Lan5_HMA4-1.gb",DNAstringSet = TRUE,separate_fasta = TRUE)}
 #'
 #' @export
-gb2sense<-function(gb_file,path=NULL,annotation=TRUE,fasta_out=NULL,annotation_out=NULL,separate_fasta=FALSE,DNAstringSet=TRUE,xy_orient=FALSE){
+gb2sense<-function(gb_file,path=NULL,annotation=TRUE,fasta_out=NULL,annotation_out=NULL,separate_fasta=FALSE,DNAstringSet=TRUE,LR_orient=FALSE){
   if(is.null(path)){
     if(is.null(fasta_out) & !DNAstringSet){message("No fasta_out path provided \n saving to the working directory")
       fasta_out<-paste0(getwd(),"/",gsub(".gb*","",basename(gb_file)),".fasta")}
-    out<-gb2info(gb_file=gb_file,annotation=annotation,fasta_out=fasta_out,separate_fasta=TRUE,DNAstringSet=DNAstringSet,xy_orient=xy_orient)
+    out<-gb2info(gb_file=gb_file,annotation=annotation,fasta_out=fasta_out,separate_fasta=TRUE,DNAstringSet=DNAstringSet,LR_orient=LR_orient)
     if(!is.null(annotation_out)){write.table(out$annotation,file = annotation_out,sep="\t",quote = F,row.names = F)}
     return(out)
   } else {
@@ -180,7 +180,7 @@ gb2sense<-function(gb_file,path=NULL,annotation=TRUE,fasta_out=NULL,annotation_o
     if(DNAstringSet){dnastring<-DNAStringSet()}
     if(annotation){annotation_table<-NULL}
     for(i in seq_along(all_gbs)){
-      out<-gb2info(gb_file=all_gbs[i],annotation=annotation,fasta_out=fasta_out,separate_fasta=separate_fasta,DNAstringSet=DNAstringSet,xy_orient=xy_orient)
+      out<-gb2info(gb_file=all_gbs[i],annotation=annotation,fasta_out=fasta_out,separate_fasta=separate_fasta,DNAstringSet=DNAstringSet,LR_orient=LR_orient)
       if(DNAstringSet){dnastring[[i]]<-out$dnaseq[[1]]
       ann_out<-out$annotation} else {ann_out<-out}
       if(annotation){annotation_table<-rbind(annotation_table,ann_out)}

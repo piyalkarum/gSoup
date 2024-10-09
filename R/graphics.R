@@ -17,6 +17,8 @@
 #' @param draw.axis logical. Whether to draw the axis
 #' @param label logical. Whether to draw the labels of the gene on the x/y axis.
 #' @param justified logical. Whether to justify the beginning of the gene to the x/y axis
+#' @param LR_orient logical. Whether to re-orient annotations to Left to Right direction where it is the opposite.
+#' @param output logical. Whether to output the annotation table
 #' @param ... any other parameters to be passed to \link{plot.default}
 #'
 #' @importFrom graphics abline axis lines mtext par polygon
@@ -29,7 +31,7 @@
 #'
 #'
 #' @export
-GeneAnno<-function(an.tab,genes=NULL,scale=c("mb","kb"),orient=c("horizontal","vertical"),ann.width=0.4,up_down_stream=FALSE,gname.col="seq",intron=FALSE,draw.axis=TRUE,label=TRUE,justified=TRUE,...){
+GeneAnno<-function(an.tab,genes=NULL,scale=c("mb","kb"),orient=c("horizontal","vertical"),ann.width=0.4,up_down_stream=FALSE,gname.col="seq",intron=FALSE,draw.axis=TRUE,label=TRUE,justified=TRUE,LR_orient=TRUE,output=FALSE,...){
   ll<-list(...)
   if(is.null(ll$col)){ll$col<-c("grey30","grey80","white")}
   if(is.null(ll$main)){ll$main<-""}
@@ -45,10 +47,9 @@ GeneAnno<-function(an.tab,genes=NULL,scale=c("mb","kb"),orient=c("horizontal","v
   if(!is.null(genes)){nsp<-length(genes)}else{nsp<-1}
   ann.width<-ann.width/20
   xrange<-nsp*0.1
-  #####################################
-  # add a script here to re-orient the strand
-  ##################
+
   coord_table<-NULL
+  plot_table<-NULL
   for(g in 1:nsp){
     if(!is.null(genes)){g_coords<-an.tab[grep(genes[g],an.tab[,gname.col]),]} else {g_coords<-an.tab}
 
@@ -59,17 +60,35 @@ GeneAnno<-function(an.tab,genes=NULL,scale=c("mb","kb"),orient=c("horizontal","v
 
     gstart<-as.numeric(g_coords[g_coords$type=="exon","start"][1])
     if(!up_down_stream){g_coords$start<-g_coords$start-(gstart-1);g_coords$end<-g_coords$end-(gstart-1)}
+    # re-orient to lr direction
+    if(LR_orient){
+      if(any(g_coords$strand=="-")){
+        gene_length <- g_coords[g_coords$type=="source" |g_coords$type=="gene" ,"end"]
+        annotation_reverse <- g_coords
+        # Adjust the start and end positions for reverse complement
+        annotation_reverse$start <- gene_length - g_coords$end + 1
+        annotation_reverse$end <- gene_length - g_coords$start + 1
+        annotation_reverse$strand <- ifelse(g_coords$strand == ".",".", "+")
+        g_coords<-annotation_reverse
+      }
+    }
     coord_table<-rbind(coord_table,g_coords)
-
   }
+
+  plot_table<-rbind(plot_table,g_coords)
 
   ####### plotting functions #########
   #horizontal
   plot_horizontal<-function(p){
     if(p==1){
-      if(label){par(mar=c(ifelse(draw.axis,5.1,0.1),10.1,0.1,1.1))} else if(ll$main==""){par(mar=c(ifelse(draw.axis,2.1,1.1),3.1,2.1,1.1))}
+      par(mar = c(
+        ifelse(draw.axis, 5.1, 0.1),
+        ifelse(label, 10.1, 3.1),
+        ifelse(ll$main != "", 3.1, 0.1),
+        1.1
+      ))
       xlm<-c(all_gstart-ifelse(up_down_stream,100,3),all_gend+ifelse(up_down_stream,100,3))
-      plot(0,xlim=xlm,ylim=c(0,xrange+ifelse(nsp>1,0.2,0)),axes=F,xlab=NA,ylab=NA,bty="n",type="n",main=ll$main)
+      plot(0,xlim=xlm,ylim=c(0,xrange+ifelse(nsp>1,0.1,0)),axes=F,xlab=NA,ylab=NA,bty="n",type="n",main=ll$main)
       if(draw.axis){
         axis(1,at=lns,labels = F)
         mtext(tx,1,at=lns, cex=0.7, adj=1.18,las=2)
@@ -80,9 +99,9 @@ GeneAnno<-function(an.tab,genes=NULL,scale=c("mb","kb"),orient=c("horizontal","v
     if(label){mtext(ifelse(is.null(genes),ll$labels,genes[p]),side=2,at=g_pos,cex=0.7,
                     font = 3,las=1,line=ifelse(up_down_stream,0.5,0))} # add the label on the y axis
     if(intron){
-      cds<-data.frame(coords[coords$type=="exon" | coords$type=="intron",c("type","start","end")])
+      cds<-data.frame(coords[coords$type=="exon" | coords$type=="intron",c("type","start","end","strand")])
     } else {
-      cds<-data.frame(coords[coords$type=="exon" ,c("type","start","end")])
+      cds<-data.frame(coords[coords$type=="exon" ,c("type","start","end","strand")])
     }
     for(i in 1:nrow(cds)){
       ty<-cds[i,1]
@@ -101,9 +120,16 @@ GeneAnno<-function(an.tab,genes=NULL,scale=c("mb","kb"),orient=c("horizontal","v
         if(is_within3 & is_within5){
           y=g_pos;width = ann.width
           polygon(x=c(start_codon,start_codon,stop_codon,stop_codon),y=c(y-width,y+width,y+width,y-width),col=ll$col[1],border = 1)
-          polygon(x=c(cds[i,2],cds[i,2],start_codon,start_codon),y=c(y-width,y+width,y+width,y-width),col=ll$col[3],border = 1)
-          crd<-create_arrow_polygon(start=stop_codon,end=cds[i,3],mid.pos=g_pos,width = ann.width,arrow_head_length = 0.9,axis="x")
-          polygon(crd,col=ll$col[3],border = 1)
+          if(any(cds$strand=="-")){
+            polygon(x=c(cds[i,"end"],cds[i,"end"],stop_codon,stop_codon),y=c(y-width,y+width,y+width,y-width),col=ll$col[3],border = 1)
+            crd<-create_arrow_polygon(start=start_codon,end=cds[i,"start"],mid.pos=g_pos,width = ann.width,arrow_head_length = 0.9,axis="x",orientation="-")
+            polygon(crd,col=ll$col[3],border = 1)
+          } else {
+            polygon(x=c(cds[i,"start"],cds[i,"start"],start_codon,start_codon),y=c(y-width,y+width,y+width,y-width),col=ll$col[3],border = 1)
+            crd<-create_arrow_polygon(start=stop_codon,end=cds[i,"end"],mid.pos=g_pos,width = ann.width,arrow_head_length = 0.9,axis="x")
+            polygon(crd,col=ll$col[3],border = 1)
+          }
+
         } else  {
           if(is_within5) {
             crd<-create_arrow_polygon(start=start_codon,end=cds[i,3],mid.pos=g_pos,width = ann.width,arrow_head_length = 0.4,axis="x")
@@ -125,9 +151,14 @@ GeneAnno<-function(an.tab,genes=NULL,scale=c("mb","kb"),orient=c("horizontal","v
   #vertical
   plot_vertical <- function(p) {
     if (p == 1) {
-      if(label){par(mar=c(10.1,ifelse(draw.axis,4.1,0.1),1.1,0.1))} else if(ll$main==""){par(mar=c(1.1,ifelse(draw.axis,3.1,2.1),2.1,1.1))}
+      par(mar = c(
+        ifelse(label, 10.1, 3.1),
+        ifelse(draw.axis, 5.1, 0.1),
+        ifelse(ll$main != "", 3.1, 0.1),
+        1.1
+      ))
       ylm <- c(all_gstart - ifelse(up_down_stream, 100, 3), all_gend + ifelse(up_down_stream, 100, 3))
-      plot(0, ylim = ylm, xlim = c(0, xrange + ifelse(nsp > 1, 0.2, 0)), axes = F, xlab = NA, ylab = NA, bty = "n", type = "n", main = ll$main)
+      plot(0, ylim = ylm, xlim = c(0, xrange + ifelse(nsp > 1, 0.1, 0)), axes = F, xlab = NA, ylab = NA, bty = "n", type = "n", main = ll$main)
       if (draw.axis) {
         axis(2, at = lns, labels = F)
         mtext(tx, 2, at = lns, cex = 0.7, adj = 1.18, las = 1)
@@ -135,12 +166,12 @@ GeneAnno<-function(an.tab,genes=NULL,scale=c("mb","kb"),orient=c("horizontal","v
     }
     if (nsp > 1) (g_pos <- xrange / nsp * p) else g_pos <- xrange / 2 # placement of the gene in the plot
     if (up_down_stream) {abline(v = g_pos, lwd = 3)} else {lines(x = c(g_pos, g_pos), y = c(gstart + 50, gend - 50), lwd = 3)}
-    if(label){mtext(ifelse(is.null(genes),ll$labels,genes[g]),side=1,at=g_pos,cex=0.7,font = 3,las=3,line=ifelse(up_down_stream,0.5,0))}
+    if(label){mtext(ifelse(is.null(genes),ll$labels,genes[p]),side=1,at=g_pos,cex=0.7,font = 3,las=3,line=ifelse(up_down_stream,0.5,0))}
 
     if (intron) {
-      cds <- data.frame(coords[coords$type == "exon" | coords$type == "intron", c("type", "start", "end")])
+      cds <- data.frame(coords[coords$type == "exon" | coords$type == "intron", c("type", "start", "end","strand")])
     } else {
-      cds <- data.frame(coords[coords$type == "exon", c("type", "start", "end")])
+      cds <- data.frame(coords[coords$type == "exon", c("type", "start", "end","strand")])
     }
 
     for (i in 1:nrow(cds)) {
@@ -159,12 +190,18 @@ GeneAnno<-function(an.tab,genes=NULL,scale=c("mb","kb"),orient=c("horizontal","v
         }
 
         if (is_within3 & is_within5) {
-          x = g_pos
-          width = ann.width
-          polygon(y = c(start_codon, start_codon, stop_codon, stop_codon), x = c(x - width, x + width, x + width, x - width), col = ll$col[1], border = 1)
-          polygon(y = c(cds[i, 2], cds[i, 2], start_codon, start_codon), x = c(x - width, x + width, x + width, x - width), col = ll$col[3], border = 1)
-          crd <- create_arrow_polygon(start = stop_codon, end = cds[i, 3], mid.pos = g_pos, width = ann.width, arrow_head_length = 0.9, axis="y")
-          polygon(crd, col = ll$col[3], border = 1)
+          x=g_pos;width = ann.width
+          polygon(y=c(start_codon,start_codon,stop_codon,stop_codon),x=c(x-width,x+width,x+width,x-width),col=ll$col[1],border = 1)
+          if(any(cds$strand=="-")){
+            polygon(y=c(cds[i,"end"],cds[i,"end"],stop_codon,stop_codon),x=c(x-width,x+width,x+width,x-width),col=ll$col[3],border = 1)
+            crd<-create_arrow_polygon(start=start_codon,end=cds[i,"start"],mid.pos=g_pos,width = ann.width,arrow_head_length = 0.9,axis="y",orientation="-")
+            polygon(crd,col=ll$col[3],border = 1)
+          } else {
+            polygon(y=c(cds[i,"start"],cds[i,"start"],start_codon,start_codon),x=c(x-width,x+width,x+width,x-width),col=ll$col[3],border = 1)
+            crd<-create_arrow_polygon(start=stop_codon,end=cds[i,"end"],mid.pos=g_pos,width = ann.width,arrow_head_length = 0.9,axis="y")
+            polygon(crd,col=ll$col[3],border = 1)
+          }
+
         } else {
           if (is_within5) {
             crd <- create_arrow_polygon(start = start_codon, end = cds[i, 3], mid.pos = g_pos, width = ann.width, arrow_head_length = 0.4, axis="y")
@@ -206,10 +243,12 @@ GeneAnno<-function(an.tab,genes=NULL,scale=c("mb","kb"),orient=c("horizontal","v
 
     gstart<-as.numeric(coords[coords$type=="exon","start"][1])
     gend<-as.numeric(coords[coords$type=="exon","end"][sum(coords$type=="exon")])
-    start_codon<-as.numeric(coords[coords$type=="start_codon","start"])
-    stop_codon<-as.numeric(coords[coords$type=="stop_codon","end"])
-    if(length(start_codon)<1){start_codon<-as.numeric(coords[coords$type=="CDS","start"][1])}
-    if(length(stop_codon)<1){stop_codon<-as.numeric(coords[coords$type=="CDS","end"][sum(coords$type=="CDS")])}
+    # start_codon<-as.numeric(coords[coords$type=="start_codon","start"])
+    # stop_codon<-as.numeric(coords[coords$type=="stop_codon","end"])
+    # if(length(start_codon)<1){start_codon<-as.numeric(coords[coords$type=="CDS","start"][1])}
+    # if(length(stop_codon)<1){stop_codon<-as.numeric(coords[coords$type=="CDS","end"][sum(coords$type=="CDS")])}
+    start_codon<-as.numeric(coords[coords$type=="CDS","start"][1])
+    stop_codon<-as.numeric(coords[coords$type=="CDS","end"][sum(coords$type=="CDS")])
     stop_codon<-stop_codon+2
 
 
@@ -221,7 +260,7 @@ GeneAnno<-function(an.tab,genes=NULL,scale=c("mb","kb"),orient=c("horizontal","v
       plot_vertical(p=p)
     }
   }
-
+if(output){return(plot_table)}
 }
 
 
