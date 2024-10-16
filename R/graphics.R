@@ -73,9 +73,8 @@ GeneAnno<-function(an.tab,genes=NULL,scale=c("mb","kb"),orient=c("horizontal","v
       }
     }
     coord_table<-rbind(coord_table,g_coords)
+    plot_table<-rbind(plot_table,g_coords)
   }
-
-  plot_table<-rbind(plot_table,g_coords)
 
   ####### plotting functions #########
   #horizontal
@@ -453,6 +452,127 @@ GeneAnno0<-function(an.tab,genes=NULL,scale=c("mb","kb"),orient=c("horizontal","
 #'
 #' @export
 plot_pi_theta<-function(Pi,annotation,anno.type=c("exon","CDS"),ratio=FALSE,log_scale=TRUE,ann.width=NULL,mid.pos=NULL,intron=FALSE,window_size=10,...){
+  ll<-list(...)
+  opars<-par(no.readonly = TRUE)
+  on.exit(par(opars))
+  #plot color and other pars
+  if(is.null(ll$col)){ll$col<-c("grey10","#E05A07","#0F757B","grey30","grey50",1)}# #2E2522
+  if(is.null(ll$lty)){ll$lty<-c(1,2,1,3,NA,NA)}
+  if(is.null(ll$pch)){ll$pch<-c(NA,NA,NA,NA,15,21)}
+  if(is.null(ll$main)){ll$main<-""}
+  anno.type<-match.arg(anno.type)
+
+  smooth_pi<-rolling_mean(Pi$window$pi,window_size=window_size)
+  smooth_theta<-rolling_mean(Pi$window$theta_w,window_size=window_size)
+  if(log_scale){
+    rat<-suppressWarnings(log2(smooth_pi/smooth_theta))
+  } else {
+    rat<-suppressWarnings(smooth_pi/smooth_theta)
+  }
+  rat_mean<-mean(rat[!is.infinite(rat)],na.rm=T)
+  rat[is.na(rat)]<-0
+  rat2<-rep(NA,length(rat))
+  rat2[is.infinite(rat)]<-0
+  mins<-min(rat[!is.infinite(rat)]);maxs<-max(rat[!is.infinite(rat)])
+  abl_cds<-data.frame(annotation[annotation$type==anno.type,c("start","end")])
+
+  if(ratio){
+    layout_matrix <- matrix(c(1, 2), nrow = 2, ncol = 1, byrow = TRUE)
+    # Set the heights for the two rows (1/3 for the top, 2/3 for the bottom)
+    layout(layout_matrix, heights = c(1, 3))
+    par(mar = c(0, 5, 3, 2))  # Adjust margins for the smaller plot
+    plot(rat, type = "n", xaxt="n",xlab=NA,frame=F,ylab="",main=ll$main,las=2)
+    rect(xleft=abl_cds[,1],ybottom = mins,xright = abl_cds[,2],ytop = maxs,col="grey85",border=NA)
+    #abline(v=abl_cds,col="grey85",lwd=1.5,lty=2)
+    lines(rat, col = ll$col[3],lwd=2)
+    lines(rat2,col = ll$col[3],lwd=2,lty=3)
+    mtext(expression("log2(" ~ pi / theta ~ ")"), side = 2, line = 3,cex=0.7)
+    abline(h=rat_mean,lty=3,lwd=2,col=ll$col[4])
+    #legend("topright",lty=2,lwd=2,col="grey20",bg="grey90",legend = "Mean ratio",cex=0.8,box.lwd = 0)
+
+  }
+
+  if(is.null(ann.width)){ann.width<-max(na.omit(c(smooth_pi,smooth_theta)))/50}
+  if(is.null(mid.pos)){mid.pos<--(ann.width*3)}
+  pi_pol<-pol_coords(smooth_pi)
+  theta_pol<-pol_coords(smooth_theta)
+  cls<-makeTransparent(ll$col[1:3],alpha=0.6)
+  if(ratio){par(mar=c(6.1 ,5.1 ,2.1 ,2.1))}else{par(mar=c(6.1 ,4.1 ,4.1 ,2.1))}
+  plot(smooth_pi,type="n",lwd=2,ylab=expression(pi ~ "," ~ theta),main=ifelse(ratio,"",ll$main),ylim=c(-(ann.width*5),max(na.omit(c(
+    smooth_pi,smooth_theta)))),frame=F,xlim=c(0,length(smooth_pi)),xlab=NA)
+  rect(xleft=abl_cds[,1],ybottom = mid.pos,xright = abl_cds[,2],ytop = maxs,col="grey85",border=NA)
+  polygon(pi_pol,col=cls[1],border = cls[1],lty=1)
+  # polygon(theta_pol,col=cls[3],border=ll$col[3],lty=4)
+  lines(smooth_theta,col=ll$col[2],lty=1,lwd=2)
+
+  if(ratio){ legend("bottomright", lty=ll$lty,pch = ll$pch,col = ll$col,lwd=2,
+                    legend = c(expression(pi),expression(theta[W]), expression(pi/theta[W]), expression("avg." ~ pi/theta[W]),"exon","UTR"),
+                    xpd=T,horiz=TRUE, bty="n",inset=c(0,1),cex=0.8)}
+
+  # add gene annotation
+  start_codon<-as.numeric(annotation[annotation$type=="start_codon","start"])
+  stop_codon<-as.numeric(annotation[annotation$type=="stop_codon","end"])
+  if(length(start_codon)<1){start_codon<-as.numeric(annotation[annotation$type=="CDS","start"][1])}
+  if(length(stop_codon)<1){stop_codon<-as.numeric(annotation[annotation$type=="CDS","end"][sum(annotation$type=="CDS")])}
+  stop_codon<-stop_codon+2
+
+  if(intron){
+    cds<-data.frame(annotation[annotation$type==anno.type | annotation$type=="intron",c("type","start","end")])
+  } else {
+    cds<-data.frame(annotation[annotation$type==anno.type ,c("type","start","end")])
+  }
+
+  abline(h=mid.pos,lwd=2)
+  for(i in 1:nrow(cds)){
+    a<-cds[i,2:3]
+    is_within5 <- start_codon >= min(a) && start_codon <= max(a)
+    is_within3 <- stop_codon >= min(a) && stop_codon <= max(a)
+
+    if(!is_within3 & !is_within5){
+      crd<-create_arrow_polygon(start=cds[i,2],end=cds[i,3],mid.pos=mid.pos,width = ann.width,axis="x")
+      polygon(crd,col=ifelse(cds[i,2]<=start_codon | cds[i,3]>=stop_codon,ll$col[3],ll$col[1]))
+    }
+    if(is_within3 & is_within5){
+      y=mid.pos;width = ann.width
+      polygon(x=c(start_codon,start_codon,stop_codon,stop_codon),y=c(y-width,y+width,y+width,y-width),col=ll$col[1],border = 1)
+      if(any(cds$strand=="-")){
+        polygon(x=c(cds[i,"end"],cds[i,"end"],stop_codon,stop_codon),y=c(y-width,y+width,y+width,y-width),col=ll$col[3],border = 1)
+        crd<-create_arrow_polygon(start=start_codon,end=cds[i,"start"],mid.pos=mid.pos,width = ann.width,arrow_head_length = 0.9,axis="x",orientation="-")
+        polygon(crd,col=ll$col[3],border = 1)
+      } else {
+        polygon(x=c(cds[i,"start"],cds[i,"start"],start_codon,start_codon),y=c(y-width,y+width,y+width,y-width),col=ll$col[3],border = 1)
+        crd<-create_arrow_polygon(start=stop_codon,end=cds[i,"end"],mid.pos=mid.pos,width = ann.width,arrow_head_length = 0.9,axis="x")
+        polygon(crd,col=ll$col[3],border = 1)
+      }
+
+    } else  {
+      if(is_within5) {
+        crd<-create_arrow_polygon(start=start_codon,end=cds[i,3],mid.pos=mid.pos,width = ann.width,arrow_head_length = 0.4,axis="x")
+        polygon(crd,col=ll$col[1],border = 1)
+        y=mid.pos;width = ann.width
+        polygon(x=c(cds[i,2],cds[i,2],start_codon,start_codon),y=c(y-width,y+width,y+width,y-width),col=ll$col[3],border = 1)
+      }
+      if(is_within3){
+        crd<-create_arrow_polygon(start=stop_codon,end=cds[i,3],mid.pos=mid.pos,width = ann.width,arrow_head_length = 0.8,axis="x")
+        polygon(crd,col=ll$col[3],border = 1)
+        y=mid.pos;width = ann.width
+        polygon(x=c(cds[i,2],cds[i,2],stop_codon,stop_codon),y=c(y-width,y+width,y+width,y-width),col=ll$col[1],border = 1)
+      }
+    }
+  }
+  # Use bquote to create the expression with Greek letters and numeric values
+  title(sub = bquote(
+    pi[avg] == .(round(Pi$average$pi, 3)) ~ "; " ~
+      theta[avg] == .(round(Pi$average$theta, 3)) ~ "; " ~
+      pi[avg]/theta[avg] == .(round(Pi$average$pi/Pi$average$theta,3))
+  ), cex.sub = 1)
+}
+
+
+
+
+
+plot_pi_theta0<-function(Pi,annotation,anno.type=c("exon","CDS"),ratio=FALSE,log_scale=TRUE,ann.width=NULL,mid.pos=NULL,intron=FALSE,window_size=10,...){
   ll<-list(...)
   opars<-par(no.readonly = TRUE)
   on.exit(par(opars))
