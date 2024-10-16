@@ -54,12 +54,6 @@ GeneAnno<-function(an.tab,genes=NULL,scale=c("mb","kb"),orient=c("horizontal","v
     if(!is.null(genes)){g_coords<-an.tab[grep(genes[g],an.tab[,gname.col]),]} else {g_coords<-an.tab}
 
     g_coords<-g_coords[!duplicated(g_coords[,c("type","start","end")]),]
-    g_coords<-g_coords[order(g_coords$start),]
-    seq_start<-as.numeric(g_coords[1,"start"][1])
-    g_coords$start<-g_coords$start-(seq_start-1);g_coords$end<-g_coords$end-(seq_start-1)
-
-    gstart<-as.numeric(g_coords[g_coords$type=="exon","start"][1])
-    if(!up_down_stream){g_coords$start<-g_coords$start-(gstart-1);g_coords$end<-g_coords$end-(gstart-1)}
     # re-orient to lr direction
     if(LR_orient){
       if(any(g_coords$strand=="-")){
@@ -72,6 +66,13 @@ GeneAnno<-function(an.tab,genes=NULL,scale=c("mb","kb"),orient=c("horizontal","v
         g_coords<-annotation_reverse
       }
     }
+    g_coords<-g_coords[order(g_coords$start),]
+    seq_start<-as.numeric(g_coords[1,"start"][1])
+    g_coords$start<-g_coords$start-(seq_start-1);g_coords$end<-g_coords$end-(seq_start-1)
+
+    gstart<-as.numeric(g_coords[g_coords$type=="exon","start"][1])
+    if(!up_down_stream){g_coords$start<-g_coords$start-(gstart-1);g_coords$end<-g_coords$end-(gstart-1)}
+
     coord_table<-rbind(coord_table,g_coords)
     plot_table<-rbind(plot_table,g_coords)
   }
@@ -102,6 +103,8 @@ GeneAnno<-function(an.tab,genes=NULL,scale=c("mb","kb"),orient=c("horizontal","v
     } else {
       cds<-data.frame(coords[coords$type=="exon" ,c("type","start","end","strand")])
     }
+    #remove overlapping exons
+    cds<-remove_overlap(cds)
     for(i in 1:nrow(cds)){
       ty<-cds[i,1]
       if(ty=="intron"){
@@ -172,6 +175,9 @@ GeneAnno<-function(an.tab,genes=NULL,scale=c("mb","kb"),orient=c("horizontal","v
     } else {
       cds <- data.frame(coords[coords$type == "exon", c("type", "start", "end","strand")])
     }
+
+    #remove overlapping exons
+    cds<-remove_overlap(cds)
 
     for (i in 1:nrow(cds)) {
       ty <- cds[i, 1]
@@ -530,19 +536,19 @@ plot_pi_theta<-function(Pi,annotation,anno.type=c("exon","CDS"),ratio=FALSE,log_
 
     if(!is_within3 & !is_within5){
       crd<-create_arrow_polygon(start=cds[i,2],end=cds[i,3],mid.pos=mid.pos,width = ann.width,axis="x")
-      polygon(crd,col=ifelse(cds[i,2]<=start_codon | cds[i,3]>=stop_codon,ll$col[3],ll$col[1]))
+      polygon(crd,col=ifelse(cds[i,2]<=start_codon | cds[i,3]>=stop_codon,"white",ll$col[1]))
     }
     if(is_within3 & is_within5){
       y=mid.pos;width = ann.width
       polygon(x=c(start_codon,start_codon,stop_codon,stop_codon),y=c(y-width,y+width,y+width,y-width),col=ll$col[1],border = 1)
       if(any(cds$strand=="-")){
-        polygon(x=c(cds[i,"end"],cds[i,"end"],stop_codon,stop_codon),y=c(y-width,y+width,y+width,y-width),col=ll$col[3],border = 1)
+        polygon(x=c(cds[i,"end"],cds[i,"end"],stop_codon,stop_codon),y=c(y-width,y+width,y+width,y-width),col="white",border = 1)
         crd<-create_arrow_polygon(start=start_codon,end=cds[i,"start"],mid.pos=mid.pos,width = ann.width,arrow_head_length = 0.9,axis="x",orientation="-")
-        polygon(crd,col=ll$col[3],border = 1)
+        polygon(crd,col="white",border = 1)
       } else {
-        polygon(x=c(cds[i,"start"],cds[i,"start"],start_codon,start_codon),y=c(y-width,y+width,y+width,y-width),col=ll$col[3],border = 1)
+        polygon(x=c(cds[i,"start"],cds[i,"start"],start_codon,start_codon),y=c(y-width,y+width,y+width,y-width),col="white",border = 1)
         crd<-create_arrow_polygon(start=stop_codon,end=cds[i,"end"],mid.pos=mid.pos,width = ann.width,arrow_head_length = 0.9,axis="x")
-        polygon(crd,col=ll$col[3],border = 1)
+        polygon(crd,col="white",border = 1)
       }
 
     } else  {
@@ -550,11 +556,11 @@ plot_pi_theta<-function(Pi,annotation,anno.type=c("exon","CDS"),ratio=FALSE,log_
         crd<-create_arrow_polygon(start=start_codon,end=cds[i,3],mid.pos=mid.pos,width = ann.width,arrow_head_length = 0.4,axis="x")
         polygon(crd,col=ll$col[1],border = 1)
         y=mid.pos;width = ann.width
-        polygon(x=c(cds[i,2],cds[i,2],start_codon,start_codon),y=c(y-width,y+width,y+width,y-width),col=ll$col[3],border = 1)
+        polygon(x=c(cds[i,2],cds[i,2],start_codon,start_codon),y=c(y-width,y+width,y+width,y-width),col="white",border = 1)
       }
       if(is_within3){
         crd<-create_arrow_polygon(start=stop_codon,end=cds[i,3],mid.pos=mid.pos,width = ann.width,arrow_head_length = 0.8,axis="x")
-        polygon(crd,col=ll$col[3],border = 1)
+        polygon(crd,col="white",border = 1)
         y=mid.pos;width = ann.width
         polygon(x=c(cds[i,2],cds[i,2],stop_codon,stop_codon),y=c(y-width,y+width,y+width,y-width),col=ll$col[1],border = 1)
       }

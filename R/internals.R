@@ -144,3 +144,27 @@ pol_coords<-function(data){
   tt[nrow(tt),]<-c(length(data),0)#data[length(data)]
   return(tt)
 }
+
+
+## function to remove overlapping exons from an annotation
+remove_overlap<-function(tt){
+  tt$length <- tt$end - tt$start + 1
+  keep_rows <- rep(TRUE, nrow(tt))
+  for (v in 1:(nrow(tt) - 1)) {
+    for (w in (v + 1):nrow(tt)) {
+      # Check if the exons overlap
+      if (tt$type[v] == tt$type[w] && tt$strand[v] == tt$strand[w] &&
+          !(tt$end[v] < tt$start[w] || tt$start[v] > tt$end[w])) {
+        # Determine which exon is longer and keep only the longest one
+        if (tt$length[v] >= tt$length[w]) {
+          keep_rows[w] <- FALSE
+        } else {
+          keep_rows[v] <- FALSE
+        }
+      }
+    }
+  }
+  tt_non_overlapping <- tt[keep_rows, ]
+  tt_non_overlapping$length <- NULL
+  return(tt_non_overlapping)
+}
