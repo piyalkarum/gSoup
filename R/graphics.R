@@ -104,7 +104,7 @@ GeneAnno<-function(an.tab,genes=NULL,scale=c("mb","kb"),orient=c("horizontal","v
       cds<-data.frame(coords[coords$type=="exon" ,c("type","start","end","strand")])
     }
     #remove overlapping exons
-    cds<-remove_overlap(cds)
+    if(nrow(cds)>1){cds<-remove_overlap(cds)}
     for(i in 1:nrow(cds)){
       ty<-cds[i,1]
       if(ty=="intron"){
@@ -177,7 +177,7 @@ GeneAnno<-function(an.tab,genes=NULL,scale=c("mb","kb"),orient=c("horizontal","v
     }
 
     #remove overlapping exons
-    cds<-remove_overlap(cds)
+    if(nrow(cds)>1){cds<-remove_overlap(cds)}
 
     for (i in 1:nrow(cds)) {
       ty <- cds[i, 1]
