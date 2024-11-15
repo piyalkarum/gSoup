@@ -3,12 +3,14 @@
 #include <string>
 #include <algorithm>
 #include <cmath>
+#include <set>
 
 using namespace Rcpp;
 
-// Function to calculate pairwise differences between two sequences
-std::pair<int, int> pairwise_diff(const CharacterVector& seq1, const CharacterVector& seq2, bool pairwise_deletion) {
+// Function to calculate pairwise differences with different models
+std::pair<double, int> pairwise_diff(const CharacterVector& seq1, const CharacterVector& seq2, bool pairwise_deletion, std::string model) {
   int diff_count = 0;
+  int trans_count = 0;
   int total_count = 0;
   
   for (int i = 0; i < seq1.size(); ++i) {
@@ -17,6 +19,10 @@ std::pair<int, int> pairwise_diff(const CharacterVector& seq1, const CharacterVe
         total_count++;
         if (seq1[i] != seq2[i]) {
           diff_count++;
+          if ((seq1[i] == "A" && seq2[i] == "G") || (seq1[i] == "G" && seq2[i] == "A") ||
+              (seq1[i] == "C" && seq2[i] == "T") || (seq1[i] == "T" && seq2[i] == "C")) {
+            trans_count++;
+          }
         }
       }
     } else {
@@ -24,26 +30,56 @@ std::pair<int, int> pairwise_diff(const CharacterVector& seq1, const CharacterVe
         total_count++;
         if (seq1[i] != seq2[i]) {
           diff_count++;
+          if ((seq1[i] == "A" && seq2[i] == "G") || (seq1[i] == "G" && seq2[i] == "A") ||
+              (seq1[i] == "C" && seq2[i] == "T") || (seq1[i] == "T" && seq2[i] == "C")) {
+            trans_count++;
+          }
         }
       }
     }
   }
-  return std::make_pair(diff_count, total_count);
+  
+  double distance = 0.0;
+  if (model == "raw") {
+    distance = static_cast<double>(diff_count) / total_count;
+  } else if (model == "JC69") {
+    double p = static_cast<double>(diff_count) / total_count;
+    distance = -0.75 * std::log(1 - (4.0 / 3.0) * p);
+  } else if (model == "K80") {
+    double p = static_cast<double>(trans_count) / total_count;
+    double q = static_cast<double>(diff_count - trans_count) / total_count;
+    distance = -0.5 * std::log(1 - 2 * p - q) - 0.25 * std::log(1 - 2 * q);
+  }
+  
+  return std::make_pair(distance, total_count);
 }
 
 // [[Rcpp::export]]
-List calc_nuc_div_theta(CharacterMatrix dna_matrix, bool pairwise_deletion = true) {
+List calc_nuc_div_theta(CharacterMatrix dna_matrix, bool pairwise_deletion = true, std::string model = "raw") {
   int num_seqs = dna_matrix.nrow();
   int seq_length = dna_matrix.ncol();
+  NumericVector sample_avg_distances(num_seqs, 0.0);
+  NumericVector counts(num_seqs, 0.0);
   double total_diff = 0;
   double total_sites = 0;
 
-  // Calculate pairwise differences for all sequences
+  // Calculate pairwise distances and accumulate averages per sample
   for (int i = 0; i < num_seqs - 1; ++i) {
     for (int j = i + 1; j < num_seqs; ++j) {
-      std::pair<int, int> diffs = pairwise_diff(dna_matrix(i, _), dna_matrix(j, _), pairwise_deletion);
-      total_diff += diffs.first;
+      std::pair<double, int> diffs = pairwise_diff(dna_matrix(i, _), dna_matrix(j, _), pairwise_deletion, model);
+      sample_avg_distances[i] += diffs.first;
+      sample_avg_distances[j] += diffs.first;
+      counts[i]++;
+      counts[j]++;
+      total_diff += diffs.first * diffs.second;
       total_sites += diffs.second;
+    }
+  }
+
+  // Finalize average distances per sample
+  for (int i = 0; i < num_seqs; ++i) {
+    if (counts[i] > 0) {
+      sample_avg_distances[i] /= counts[i];
     }
   }
 
@@ -76,6 +112,7 @@ List calc_nuc_div_theta(CharacterMatrix dna_matrix, bool pairwise_deletion = tru
     Named("pi") = nucleotide_diversity,
     Named("theta") = watterson_theta,
     Named("tot_diff") = total_diff,
-    Named("seg_sit") = segregating_sites
+    Named("seg_sit") = segregating_sites,
+    Named("average_per_sample") = sample_avg_distances
   );
 }

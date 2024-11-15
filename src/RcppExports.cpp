@@ -11,14 +11,15 @@ Rcpp::Rostream<false>& Rcpp::Rcerr = Rcpp::Rcpp_cerr_get();
 #endif
 
 // calc_nuc_div_theta
-List calc_nuc_div_theta(CharacterMatrix dna_matrix, bool pairwise_deletion);
-RcppExport SEXP _gSoup_calc_nuc_div_theta(SEXP dna_matrixSEXP, SEXP pairwise_deletionSEXP) {
+List calc_nuc_div_theta(CharacterMatrix dna_matrix, bool pairwise_deletion, std::string model);
+RcppExport SEXP _gSoup_calc_nuc_div_theta(SEXP dna_matrixSEXP, SEXP pairwise_deletionSEXP, SEXP modelSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
     Rcpp::traits::input_parameter< CharacterMatrix >::type dna_matrix(dna_matrixSEXP);
     Rcpp::traits::input_parameter< bool >::type pairwise_deletion(pairwise_deletionSEXP);
-    rcpp_result_gen = Rcpp::wrap(calc_nuc_div_theta(dna_matrix, pairwise_deletion));
+    Rcpp::traits::input_parameter< std::string >::type model(modelSEXP);
+    rcpp_result_gen = Rcpp::wrap(calc_nuc_div_theta(dna_matrix, pairwise_deletion, model));
     return rcpp_result_gen;
 END_RCPP
 }
@@ -46,7 +47,7 @@ END_RCPP
 }
 
 static const R_CallMethodDef CallEntries[] = {
-    {"_gSoup_calc_nuc_div_theta", (DL_FUNC) &_gSoup_calc_nuc_div_theta, 2},
+    {"_gSoup_calc_nuc_div_theta", (DL_FUNC) &_gSoup_calc_nuc_div_theta, 3},
     {"_gSoup_calculate_pi", (DL_FUNC) &_gSoup_calculate_pi, 1},
     {"_gSoup_calculate_sfs_cpp", (DL_FUNC) &_gSoup_calculate_sfs_cpp, 1},
     {NULL, NULL, 0}

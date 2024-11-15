@@ -961,6 +961,49 @@ blast_plot0<-function(blast_out,scale=c("mb","kb"),cols=c("stitle","sseqid","sst
 # }
 #
 
+# Define the function to find clusters of blast hits within a specified maximum range
+# ** this function find clusters of gene coordinates within a given window (max_range)
+# -and returns the coordinates within each cluster ***
+find_blast_clusters <- function(data, max_range = 4000) {
+  # Normalize sstart and send to ensure sstart is always less than or equal to send
+  maxmin<-data.frame(t(apply(data,1,range)))
+  colnames(maxmin)<-c("sstart","send")
+  data<-maxmin
+  # data$sstart <- pmin(data$sstart, data$send)
+  # data$send <- pmax(data$sstart, data$send)
+  if (nrow(data) == 1) {
+    return(list(data))
+  }
+
+  data <- data[order(data$sstart), ]
+  clusters <- list()
+  current_cluster <- data[1, ]
+
+  for (i in 2:nrow(data)) {
+    current_start <- data$sstart[i]
+    current_end <- data$send[i]
+
+    cluster_start <- min(current_cluster$sstart)
+    cluster_end <- max(current_cluster$send)
+    cluster_length <- cluster_end - cluster_start
+    if (cluster_length < max_range && (current_start - cluster_start) <= max_range) {
+      combined_length <- max(cluster_end, current_end) - cluster_start
+      if (combined_length <= max_range) {
+        current_cluster <- rbind(current_cluster, data[i, ])
+      } else {
+        clusters[[length(clusters) + 1]] <- current_cluster
+        current_cluster <- data[i, ]
+      }
+    } else {
+      clusters[[length(clusters) + 1]] <- current_cluster
+      current_cluster <- data[i, ]
+    }
+  }
+  clusters[[length(clusters) + 1]] <- current_cluster
+  return(clusters)
+}
+
+
 # Define the function to find clusters of blast hits
 # ** this function find clusters of gene coordinates within a given window (threshold)-
 # -and returns the coordinates within each cluster ***
@@ -978,6 +1021,34 @@ find_clusters <- function(numbers, threshold = 15000) {
     }
   }
 
+  clusters[[length(clusters) + 1]] <- current_cluster
+
+  return(clusters)
+}
+
+
+# Define the function to find clusters of blast hits within a specified range
+# This function finds clusters of gene coordinates within a given minimum and maximum range threshold
+# and returns the coordinates within each cluster
+find_clusters <- function(numbers, min_threshold = 1000, max_threshold = 15000) {
+  sorted_numbers <- sort(numbers)
+  clusters <- list()
+  current_cluster <- c(sorted_numbers[1])
+
+  for (i in 2:length(sorted_numbers)) {
+    difference <- sorted_numbers[i] - sorted_numbers[i - 1]
+
+    # Check if the difference falls within the specified range
+    if (difference >= min_threshold && difference <= max_threshold) {
+      current_cluster <- c(current_cluster, sorted_numbers[i])
+    } else {
+      # Save the current cluster and start a new one
+      clusters[[length(clusters) + 1]] <- current_cluster
+      current_cluster <- c(sorted_numbers[i])
+    }
+  }
+
+  # Add the last cluster to the list
   clusters[[length(clusters) + 1]] <- current_cluster
 
   return(clusters)
@@ -1835,5 +1906,37 @@ pi_theta0<-function(fast_path,window=100,pairwise_deletion=TRUE,plot=TRUE,progre
 }
 
 
+## extract protein sequences from AUGUSTUS outputs ----------------
+# out_file<-"/Users/piyalkaru/Desktop/DDORF/Ann/REM/Athal/anno_out/AUG_proteins.fa"
+# in_file<-"/Users/piyalkaru/Desktop/DDORF/Ann/REM/Athal/anno_out/augustus_output.txt"
+aug2protein<-function(in_file,out_file,AA_String=TRUE){
+  ag_in<-readLines(in_file)
+  outfile <- file(description = out_file, open = "w")
 
+  start_line<-grep("prediction on sequence number",ag_in)
+  pred_list<-list()
+  for(i in seq_along(start_line)){
+    end_line<-(start_line[i+1]-1)
+    tm<-ag_in[start_line[i]:ifelse(i==length(start_line),length(ag_in),end_line)]
+    name<-stringr::str_trim(gsub(") -----","",stringr::str_split_fixed(tm[1],"name =",n=2)[,2]))
+    opn<-grep("\\[",tm)
+    en<-grep("\\]",tm)
+    pr_list<-list()
+    for(op in seq_along(opn)){
+      pr_seq<-tm[opn[op]:en[op]]
+      pr_seq<-gsub("[^a-zA-Z]","",gsub("#","",gsub("protein sequence =","",pr_seq)))
+      pr_seq<-paste0(pr_seq,collapse = "")
+      writeLines(paste(">", name,"_protein_",op, sep = ""), outfile)
+      writeLines(pr_seq, outfile)
+      pr_list[[op]]<-pr_seq
+      names(pr_list)[[op]]<-paste0(name,"_protein_",op)
+    }
+    pred_list[[i]]<-pr_list
+    #names(pred_list)[i]<-name
+  }
+  close(outfile)
+  if(AA_String){
+    return(Biostrings::AAStringSet(unlist(pred_list)))
+  }
+}
 
