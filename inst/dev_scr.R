@@ -83,3 +83,5 @@ Rcpp::compileAttributes()
 devtools::build()
 devtools::check()
 devtools::install()
+
+
