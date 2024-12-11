@@ -223,8 +223,6 @@ GeneAnno_sp<-function(an.tab,genes=NULL,scale=c("mb","kb"),orient=c("horizontal"
 
   ####### plotting functions #########
   #horizontal
-
-
   plot_horizontal_sp<-function(p){
     if(p==1){
       par(mar = c(

@@ -45,11 +45,25 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// wind_intpol
+NumericMatrix wind_intpol(NumericMatrix mat, int wind, int width);
+RcppExport SEXP _gSoup_wind_intpol(SEXP matSEXP, SEXP windSEXP, SEXP widthSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< NumericMatrix >::type mat(matSEXP);
+    Rcpp::traits::input_parameter< int >::type wind(windSEXP);
+    Rcpp::traits::input_parameter< int >::type width(widthSEXP);
+    rcpp_result_gen = Rcpp::wrap(wind_intpol(mat, wind, width));
+    return rcpp_result_gen;
+END_RCPP
+}
 
 static const R_CallMethodDef CallEntries[] = {
     {"_gSoup_calc_nuc_div_theta", (DL_FUNC) &_gSoup_calc_nuc_div_theta, 3},
     {"_gSoup_calculate_pi", (DL_FUNC) &_gSoup_calculate_pi, 1},
     {"_gSoup_calculate_sfs_cpp", (DL_FUNC) &_gSoup_calculate_sfs_cpp, 1},
+    {"_gSoup_wind_intpol", (DL_FUNC) &_gSoup_wind_intpol, 3},
     {NULL, NULL, 0}
 };
 
