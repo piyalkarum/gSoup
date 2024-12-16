@@ -437,3 +437,39 @@ GeneAnno_sp<-function(an.tab,genes=NULL,scale=c("mb","kb"),orient=c("horizontal"
 
 
 
+
+############ MAPPING ###############
+# --------- functions -------------------
+rast_index<-function(indx,geom=c("lon","lat"),resolution=1,crs="+proj=longlat +datum=WGS84",extent=1,field=""){
+  pts <- vect(indx, geom=geom, crs=crs)
+  r<-rast()
+  ext(r)<-ext(pts)
+  res(r)<-resolution
+  if(length(extent)==1){r<-extend(r,ext(r)+(extent*resolution))}
+  if(length(extent)==4){extent<-ext(extent) ;r<-extend(r, y=extent)}
+  pir<-rasterize(pts,r,field=field)
+}
+
+
+dup_mean<-function(ind.rast, indx,geom=c("lon","lat")){
+  pt<-indx[,geom]
+  ll<-na.omit(cbind(cellFromXY(ind.rast,pt),indx))
+  dp<-unique(ll[duplicated(ll[,1]),1])
+  if(length(dp)>0){
+    wodp<-ll[!duplicated(ll[,1]),]
+    for(i in seq_along(dp)){
+      wodp[wodp[,1]==dp[i],4]<-mean(ll[ll[,1]==dp[i],4])
+    }
+    return(wodp[,2:4])
+  } else {
+    wodp<-indx
+    return(wodp)
+  }
+}
+
+
+
+
+
+
+
