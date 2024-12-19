@@ -442,11 +442,14 @@ GeneAnno_sp<-function(an.tab,genes=NULL,scale=c("mb","kb"),orient=c("horizontal"
 # --------- functions -------------------
 rast_index<-function(indx,geom=c("lon","lat"),resolution=1,crs="+proj=longlat +datum=WGS84",extent=1,field=""){
   pts <- vect(indx, geom=geom, crs=crs)
-  r<-rast()
-  ext(r)<-ext(pts)
-  res(r)<-resolution
-  if(length(extent)==1){r<-extend(r,ext(r)+(extent*resolution))}
-  if(length(extent)==4){extent<-ext(extent) ;r<-extend(r, y=extent)}
+  if(length(extent)==4){
+    r<-rast(extent=ext(extent),resolution=resolution,crs=crs)
+  } else {
+    r<-rast(crs=crs)
+    ext(r)<-ext(pts)
+    res(r)<-resolution
+    r<-extend(r,ext(r)+(extent*resolution))
+  }
   pir<-rasterize(pts,r,field=field)
 }
 

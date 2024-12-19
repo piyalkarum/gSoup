@@ -1,5 +1,6 @@
 #include <Rcpp.h>
 #include <progress.hpp>
+#include <progress_bar.hpp>
 using namespace Rcpp;
 
 // Helper function to calculate mean while ignoring NA values
@@ -17,11 +18,12 @@ double max_na(const NumericVector& x) {
 }
 
 // [[Rcpp::export]]
-NumericMatrix wind_intpol(NumericMatrix mat, int wind = 50, int width = 3) {
+NumericMatrix wind_intpol(NumericMatrix mat, int wind = 50, int width = 3, bool show_progress = true) {
   int nrow = mat.nrow();
   int ncol = mat.ncol();
 
-  Progress pb(wind, true); // Initialize progress bar
+  // Initialize progress bar if show_progress is TRUE
+  Progress pb(wind, show_progress);
 
   for (int w = 0; w < wind; ++w) {
     if (Progress::check_abort()) return mat; // Allow user interruption
@@ -89,7 +91,9 @@ NumericMatrix wind_intpol(NumericMatrix mat, int wind = 50, int width = 3) {
       }
     }
 
-    pb.increment(); // Update progress bar
+    if (show_progress) {
+      pb.increment(); // Update progress bar
+    }
   }
 
   return mat;

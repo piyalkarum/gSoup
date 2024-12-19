@@ -94,6 +94,7 @@ wind_intpol_R<-function(mt,wind=50,width=3){
 
 
 ## MAPPING ------------------------------
+#original functions
 library(terra)
 
 # --------- functions -------------------

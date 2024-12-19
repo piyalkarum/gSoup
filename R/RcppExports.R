@@ -13,7 +13,7 @@ calculate_sfs_cpp <- function(alignment) {
     .Call(`_gSoup_calculate_sfs_cpp`, alignment)
 }
 
-wind_intpol <- function(mat, wind = 50L, width = 3L) {
-    .Call(`_gSoup_wind_intpol`, mat, wind, width)
+wind_intpol <- function(mat, wind = 50L, width = 3L, show_progress = TRUE) {
+    .Call(`_gSoup_wind_intpol`, mat, wind, width, show_progress)
 }
 
