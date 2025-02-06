@@ -311,7 +311,7 @@ MKT_HKA_test<-function(dna_algn,outgroup_name,region=NULL,detailed_output=FALSE)
   dna_matrix <- as.matrix(as.DNAbin(dna_algn))
   if(!is.null(region)){
     if(length(region)==2){
-      dna_matrix<-dna_matrix[,region]
+      dna_matrix<-dna_matrix[,region[1]:region[2]]
     } else {stop("provide a valid range (start,end)")}
   }
 
