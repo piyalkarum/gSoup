@@ -169,254 +169,104 @@ remove_overlap<-function(tt){
   return(tt_non_overlapping)
 }
 
+# Genetic code Universal
+genetic_code<-list(
+  "TTT" = "F", "TTC" = "F", "TTA" = "L", "TTG" = "L",
+  "CTT" = "L", "CTC" = "L", "CTA" = "L", "CTG" = "L",
+  "ATT" = "I", "ATC" = "I", "ATA" = "I", "ATG" = "M",
+  "GTT" = "V", "GTC" = "V", "GTA" = "V", "GTG" = "V",
+  "TCT" = "S", "TCC" = "S", "TCA" = "S", "TCG" = "S",
+  "CCT" = "P", "CCC" = "P", "CCA" = "P", "CCG" = "P",
+  "ACT" = "T", "ACC" = "T", "ACA" = "T", "ACG" = "T",
+  "GCT" = "A", "GCC" = "A", "GCA" = "A", "GCG" = "A",
+  "TAT" = "Y", "TAC" = "Y", "TAA" = "X", "TAG" = "X",
+  "CAT" = "H", "CAC" = "H", "CAA" = "Q", "CAG" = "Q",
+  "AAT" = "N", "AAC" = "N", "AAA" = "K", "AAG" = "K",
+  "GAT" = "D", "GAC" = "D", "GAA" = "E", "GAG" = "E",
+  "TGT" = "C", "TGC" = "C", "TGA" = "X", "TGG" = "W",
+  "CGT" = "R", "CGC" = "R", "CGA" = "R", "CGG" = "R",
+  "AGT" = "S", "AGC" = "S", "AGA" = "R", "AGG" = "R",
+  "GGT" = "G", "GGC" = "G", "GGA" = "G", "GGG" = "G"
+)
 
-
-
-
-### special function to plot annotation -------
-GeneAnno_sp<-function(an.tab,genes=NULL,scale=c("mb","kb"),orient=c("horizontal","vertical"),ann.width=0.4,up_down_stream=FALSE,gname.col="seq",intron=FALSE,draw.axis=TRUE,label=TRUE,justified=TRUE,LR_orient=TRUE,features=NULL,feat_col="grey10",output=FALSE,...){
-  ll<-list(...)
-  if(is.null(ll$col)){ll$col<-c("grey40","grey80","white")}
-  if(is.null(ll$main)){ll$main<-""}
-  if(is.null(ll$labels)){ll$labels<-substr(as.character(an.tab[1,1]),1,10)}
-  scale<-match.arg(scale)
-  opars<-par("mar")
-  on.exit(par(mar=opars))
-  orient<-match.arg(orient)
-  if(is.null(feat_col)){feat_col<-rainbow(length(features))}
-
-  an.tab<-data.frame(an.tab)
-  nggs<-unique(an.tab[,gname.col])
-  if(length(nggs)>1){if(is.null(genes)){warning("No genes provided\nThere are multiple genes/sequenes in the table \n All genes/sequences will be plotted");genes<-nggs}}
-  if(!is.null(genes)){nsp<-length(genes)}else{nsp<-1}
-  ann.width<-ann.width/20
-  xrange<-nsp*0.1
-
-  coord_table<-NULL
-  plot_table<-NULL
-  for(g in 1:nsp){
-    if(!is.null(genes)){g_coords<-an.tab[grep(genes[g],an.tab[,gname.col]),]} else {g_coords<-an.tab}
-
-    g_coords<-g_coords[!duplicated(g_coords[,c("type","start","end")]),]
-    # re-orient to lr direction
-    if(LR_orient){
-      if(any(g_coords$strand=="-")){
-        gene_length <- g_coords[g_coords$type=="source" |g_coords$type=="gene" ,"end"]
-        annotation_reverse <- g_coords
-        # Adjust the start and end positions for reverse complement
-        annotation_reverse$start <- gene_length - g_coords$end + 1
-        annotation_reverse$end <- gene_length - g_coords$start + 1
-        annotation_reverse$strand <- ifelse(g_coords$strand == ".",".", "+")
-        g_coords<-annotation_reverse
-      }
-    }
-    g_coords<-g_coords[order(g_coords$start),]
-    seq_start<-as.numeric(g_coords[1,"start"][1])
-    g_coords$start<-g_coords$start-(seq_start-1);g_coords$end<-g_coords$end-(seq_start-1)
-
-    gstart<-as.numeric(g_coords[g_coords$type=="exon","start"][1])
-    if(!up_down_stream){g_coords$start<-g_coords$start-(gstart-1);g_coords$end<-g_coords$end-(gstart-1)}
-
-    coord_table<-rbind(coord_table,g_coords)
-    plot_table<-rbind(plot_table,g_coords)
-  }
-
-  ####### plotting functions #########
-  #horizontal
-  plot_horizontal_sp<-function(p){
-    if(p==1){
-      par(mar = c(
-        ifelse(draw.axis, 5.1, 0.1),
-        ifelse(label, 10.1, 3.1),
-        ifelse(ll$main != "", 3.1, 0.1),
-        1.1
-      ))
-      xlm<-c(all_gstart-ifelse(up_down_stream,100,3),all_gend+ifelse(up_down_stream,100,3))
-      plot(0,xlim=xlm,ylim=c(0,xrange+ifelse(nsp>1,0.1,0)),axes=F,xlab=NA,ylab=NA,bty="n",type="n",main=ll$main)
-      if(draw.axis){
-        axis(1,at=lns,labels = F)
-        mtext(tx,1,at=lns, cex=0.7, adj=1.18,las=2)
-      }
-    }
-    if(nsp>1)(g_pos<-xrange/nsp*p) else g_pos<-xrange/2 # placement of the gene in the plot
-    if(up_down_stream){abline(h=g_pos,lwd=3)} else {lines(y=c(g_pos,g_pos),x=c(gstart+50,gend-50),lwd=3)}
-    if(label){mtext(ifelse(is.null(genes),ll$labels,genes[p]),side=2,at=g_pos,cex=0.7,
-                    font = 3,las=1,line=ifelse(up_down_stream,0.5,0))} # add the label on the y axis
-    if(intron){
-      cds<-data.frame(coords[coords$type=="exon" | coords$type=="intron",c("type","start","end","strand")])
-    } else {
-      cds<-data.frame(coords[coords$type=="exon" ,c("type","start","end","strand")])
-    }
-
-    feat_range<-range(coords[coords$type==feature,c("start","end")])
-    #remove overlapping exons
-    if(nrow(cds)>1){cds<-gSoup:::remove_overlap(cds)}
-    ex_num<-c("I","II","III","IV","V","VI","VII","VIII","IXa","IXb")
-    for(i in 1:nrow(cds)){
-      ty<-cds[i,1]
-      if(ty=="intron"){
-        in.width<-ann.width/2
-        polygon(x=rep(c(cds[i,2],cds[i,3]),each=2),y=c(y-in.width,y+in.width,y+in.width,y-in.width),col=ll$col[2],border = 1)
-      } else {
-        a<-cds[i,2:3]
-        is_within5 <- start_codon >= min(a) && start_codon <= max(a)
-        is_within3 <- stop_codon >= min(a) && stop_codon <= max(a)
-
-        ###############################
-
-        # Determine the relationship to feature
-        if (a[1] >= feat_range[1] && a[2] <= feat_range[2]) {
-          feat <- "IN"
-        } else if (a[2] < feat_range[1] || a[1] > feat_range[2]) {
-          feat <- "OUT"
-        } else if (a[1] < feat_range[1] && a[2] <= feat_range[2]) {
-          feat <- "LFT"
-        } else if (a[1] >= feat_range[1] && a[2] > feat_range[2]) {
-          feat <- "RGT"
-        } else {
-          feat <- "BOT"
-        }
-
-        ##############################
-
-        if(!is_within3 & !is_within5){
-          if(feat!="OUT"){
-            if(feat=="IN"){
-              crd<-gSoup:::create_arrow_polygon(start=cds[i,2],end=cds[i,3],mid.pos=g_pos,width = ann.width,axis="x")
-              polygon(crd,col=ifelse(cds[i,2]<=start_codon | cds[i,3]>=stop_codon,ll$col[3],feat_col))
-            }
-            if(feat=="LFT"){
-              crd<-gSoup:::create_arrow_polygon(start=cds[i,2],end=cds[i,3],mid.pos=g_pos,width = ann.width,axis="x")
-              polygon(crd,col=ifelse(cds[i,2]<=start_codon | cds[i,3]>=stop_codon,ll$col[3],feat_col))
-              y=g_pos;width = ann.width
-              polygon(x=c(cds[i,2],cds[i,2],feat_range[1],feat_range[1]),y=c(y-width,y+width,y+width,y-width),col=ll$col[1],border = 1)
-            }
-            if(feat=="RGT"){
-              crd<-gSoup:::create_arrow_polygon(start=cds[i,2],end=cds[i,3],mid.pos=g_pos,width = ann.width,axis="x")
-              polygon(crd,col=ifelse(cds[i,2]<=start_codon | cds[i,3]>=stop_codon,ll$col[3],ll$col[1]))
-              y=g_pos;width = ann.width
-              polygon(x=c(cds[i,2],cds[i,2],feat_range[2],feat_range[2]),y=c(y-width,y+width,y+width,y-width),col=feat_col,border = 1)
-            }
-          } else {
-            crd<-gSoup:::create_arrow_polygon(start=cds[i,2],end=cds[i,3],mid.pos=g_pos,width = ann.width,axis="x")
-            polygon(crd,col=ifelse(cds[i,2]<=start_codon | cds[i,3]>=stop_codon,ll$col[3],ll$col[1]))
-          }
-        }
-
-        if(is_within3 & is_within5){
-          y=g_pos;width = ann.width
-          polygon(x=c(start_codon,start_codon,stop_codon,stop_codon),y=c(y-width,y+width,y+width,y-width),col=ll$col[1],border = 1)
-          if(any(cds$strand=="-")){
-            polygon(x=c(cds[i,"end"],cds[i,"end"],stop_codon,stop_codon),y=c(y-width,y+width,y+width,y-width),col=ll$col[3],border = 1)
-            crd<-gSoup:::create_arrow_polygon(start=start_codon,end=cds[i,"start"],mid.pos=g_pos,width = ann.width,arrow_head_length = 0.9,axis="x",orientation="-")
-            polygon(crd,col=ll$col[3],border = 1)
-          } else {
-            polygon(x=c(cds[i,"start"],cds[i,"start"],start_codon,start_codon),y=c(y-width,y+width,y+width,y-width),col=ll$col[3],border = 1)
-            crd<-gSoup:::create_arrow_polygon(start=stop_codon,end=cds[i,"end"],mid.pos=g_pos,width = ann.width,arrow_head_length = 0.9,axis="x")
-            polygon(crd,col=ll$col[3],border = 1)
-          }
-          polygon(x=c(feat_range[1],feat_range[1],feat_range[2],feat_range[2]),y=c(y-width,y+width,y+width,y-width),col=feat_col,border = 1)
-
-        } else  {
-          if(is_within5) {
-            if(feat!="OUT"){
-              if(feat=="IN"){
-                crd<-gSoup:::create_arrow_polygon(start=start_codon,end=cds[i,3],mid.pos=g_pos,width = ann.width,arrow_head_length = 0.4,axis="x")
-                polygon(crd,col=ll$col[1],border = 1)
-                y=g_pos;width = ann.width
-                polygon(x=c(cds[i,2],cds[i,2],start_codon,start_codon),y=c(y-width,y+width,y+width,y-width),col=ll$col[3],border = 1)
-              }
-              if(feat=="LFT"){
-
-                crd<-gSoup:::create_arrow_polygon(start=start_codon,end=cds[i,3],mid.pos=g_pos,width = ann.width,arrow_head_length = 0.4,axis="x")
-                polygon(crd,col=feat_col,border = 1)
-                y=g_pos;width = ann.width
-                polygon(x=c(cds[i,2],cds[i,2],feat_range[1],feat_range[1]),y=c(y-width,y+width,y+width,y-width),col=ll$col[1],border = 1)
-
-              }
-              if(feat=="RGT"){
-                crd<-gSoup:::create_arrow_polygon(start=start_codon,end=cds[i,3],mid.pos=g_pos,width = ann.width,arrow_head_length = 0.4,axis="x")
-                polygon(crd,col=ll$col[1],border = 1)
-                y=g_pos;width = ann.width
-                polygon(x=c(cds[i,2],cds[i,2],feat_range[2],feat_range[2]),y=c(y-width,y+width,y+width,y-width),col=feat_col,border = 1)
-              }
-
-            } else {
-              crd<-gSoup:::create_arrow_polygon(start=start_codon,end=cds[i,3],mid.pos=g_pos,width = ann.width,arrow_head_length = 0.4,axis="x")
-              polygon(crd,col=ll$col[1],border = 1)
-              y=g_pos;width = ann.width
-              polygon(x=c(cds[i,2],cds[i,2],start_codon,start_codon),y=c(y-width,y+width,y+width,y-width),col=ll$col[3],border = 1)
-
-            }
-
-          }
-          if(is_within3){
-            if(feat!="OUT"){
-              if(feat=="IN"){
-                crd<-gSoup:::create_arrow_polygon(start=stop_codon,end=cds[i,3],mid.pos=g_pos,width = ann.width,arrow_head_length = 0.8,axis="x")
-                polygon(crd,col=ll$col[3],border = 1)
-                y=g_pos;width = ann.width
-                polygon(x=c(cds[i,2],cds[i,2],stop_codon,stop_codon),y=c(y-width,y+width,y+width,y-width),col=ll$col[1],border = 1)
-              }
-              if(feat=="RGT"){
-                crd<-gSoup:::create_arrow_polygon(start=stop_codon,end=cds[i,3],mid.pos=g_pos,width = ann.width,arrow_head_length = 0.8,axis="x")
-                polygon(crd,col=ll$col[3],border = 1)
-                y=g_pos;width = ann.width
-                polygon(x=c(cds[i,2],cds[i,2],stop_codon,stop_codon),y=c(y-width,y+width,y+width,y-width),col=ll$col[1],border = 1)
-                polygon(x=c(cds[i,2],cds[i,2],feat_range[2],feat_range[2]),y=c(y-width,y+width,y+width,y-width),col=feat_col,border = 1)
-
-              }
-            } else {
-              crd<-gSoup:::create_arrow_polygon(start=stop_codon,end=cds[i,3],mid.pos=g_pos,width = ann.width,arrow_head_length = 0.8,axis="x")
-              polygon(crd,col=ll$col[3],border = 1)
-              y=g_pos;width = ann.width
-              polygon(x=c(cds[i,2],cds[i,2],stop_codon,stop_codon),y=c(y-width,y+width,y+width,y-width),col=ll$col[1],border = 1)
-              #text(x=mean(c(stop_codon,cds[i,2])),y=g_pos,labels = bquote(italic(.(ex_num[i]))),col="grey10",cex=0.5)
-            }
-          }
-        }
-        if(i!=1){text(x=mean(unlist(a)),y=g_pos,labels = bquote(italic(.(ex_num[i-1]))),col=ifelse(i==1,"grey10","white"),cex=0.5)}
-      }
-    }
-  }
-
-
-  ####################################
-  if(up_down_stream){
-    all_gstart<-min(as.numeric(coord_table[,"start"]))
-    all_gend<-max(as.numeric(coord_table[,"end"]))
+# function to convert codon to amino acids
+codon_to_aa <- function(codon, genetic_code) {
+  if (codon %in% names(genetic_code)) {
+    return(genetic_code[[codon]])
   } else {
-    all_gstart<-min(as.numeric(coord_table[coord_table$type=="exon","start"]))
-    all_gend<-max(as.numeric(coord_table[coord_table$type=="exon","end"]))
+    return("X")  # Unknown codon
   }
-
-  lns<-seq(all_gstart,all_gend,length.out=10)
-  denom<-ifelse(scale=="mb",1000000,1000)
-  tx<-paste0(trunc((lns/denom)*denom)/denom, paste0("\n",scale))
-
-  if(is.null(genes)){genes_list<-1}else{genes_list<-genes}
-
-  for(p in seq_along(genes_list)){
-    if(!is.null(genes)){coords<-coord_table[grep(genes[p],coord_table[,gname.col]),]} else {coords<-coord_table}
-    xy<-coords[,c("start","end")]
-
-    gstart<-as.numeric(coords[coords$type=="exon","start"][1])
-    gend<-as.numeric(coords[coords$type=="exon","end"][sum(coords$type=="exon")])
-    start_codon<-as.numeric(coords[coords$type=="CDS","start"][1])
-    stop_codon<-as.numeric(coords[coords$type=="CDS","end"][sum(coords$type=="CDS")])
-    stop_codon<-stop_codon+2
-
-
-    #draw horizontally
-    if(orient=="horizontal"){
-      plot_horizontal_sp(p=p)
-    }
-    if(orient=="vertical"){
-      plot_vertical(p=p)
-    }
-  }
-  if(output){return(plot_table)}
 }
+
+
+# function to calculate MKT and HKA stats
+calc_mkt_hka<-function(dna_matrix, outgroup_name){
+  #reference row
+  ref_row<-which(labels(dna_matrix)==outgroup_name)
+  if(length(ref_row)==0){stop("Outgroup name is not in the alignment")}
+  #ingroup species sequences only
+  sp1<-dna_matrix[-ref_row,]
+
+  # find all polymorphic sites
+  poly_sites<-NULL
+  for(i in 1:ncol(sp1)){
+    tm<-unique(as.character(sp1[,i]))
+    tm<-tm[grepl("^[A-Za-z]$",tm)]
+    if(length(tm)>1){poly_sites<-c(poly_sites,i)}
+  }
+
+  # sites to check for fixed differences
+  fixed_all<-setdiff(1:ncol(dna_matrix),poly_sites)
+
+  # fixed differences sites
+  fixed_diffs<-NULL
+  for(i in seq_along(fixed_all)){
+    tm<-unique(as.character(dna_matrix[,fixed_all[i]]))
+    tm<-tm[grepl("^[A-Za-z]$",tm)]
+    if(length(tm)>1){fixed_diffs<-c(fixed_diffs,fixed_all[i])}
+  }
+
+  # count polymorphic synonymous and nonsynonymous sites
+  poly_syn<-0
+  poly_nsyn<-0
+  for(i in seq_along(poly_sites)){
+    codon_start<- ((poly_sites[i]%/% 3) * 3)+1
+    tm2<-as.character(sp1[,codon_start:(codon_start+2)])
+    tm2<-paste0(tm2[,1],tm2[,2],tm2[,3])
+    tm2<-unique(tm2)
+    tm2<-toupper(tm2)
+    aas<-unique(unlist(lapply(tm2,codon_to_aa,genetic_code)))
+    aas<-aas[aas!="X"]
+    if(length(aas)==1){poly_syn<-poly_syn+1} else if(length(aas)>1){poly_nsyn<-poly_nsyn+1}
+  }
+
+  # count fixed differences synonymous and nonsynonymous sites
+  fixed_syn<-0
+  fixed_nsyn<-0
+  for(i in seq_along(fixed_diffs)){
+    codon_start<- ((fixed_diffs[i]%/% 3) * 3)+1
+    tm2<-as.character(dna_matrix[,codon_start:(codon_start+2)])
+    tm2<-paste0(tm2[,1],tm2[,2],tm2[,3])
+    tm2<-unique(tm2)
+    tm2<-toupper(tm2)
+    aas<-unique(unlist(lapply(tm2,codon_to_aa,genetic_code)))
+    aas<-aas[aas!="X"]
+    if(length(aas)==1){fixed_syn<-fixed_syn+1} else if(length(aas)>1){fixed_nsyn<-fixed_nsyn+1}
+  }
+
+  # Mcdonald kreitman ratio
+  mkt_ratio<-(poly_nsyn/poly_syn) / (fixed_nsyn/fixed_syn)
+
+  # HKA ratio
+  hka_stat<-(poly_syn/fixed_syn) - (poly_nsyn/fixed_nsyn)
+
+  return(list(polymorphic_sites=poly_sites, fixed_diff_sites=fixed_diffs, polymorphic_syn_count=poly_syn,
+              polymorphic_nonsyn_count=poly_nsyn, fixed_diff_syn_count=fixed_syn, fixed_diff_nonsyn_count=fixed_nsyn,
+              MKT_ratio=mkt_ratio,HKA_statistic=hka_stat))
+}
+
+
+
 
 
 
@@ -471,6 +321,42 @@ dup_mean<-function(ind.rast, indx,geom=c("lon","lat")){
 }
 
 
+# Function to adjust coordinates within a given km radius
+#' @importFrom stats runif
+#'
+coord_adjust <- function(lat, lon, n, radius=100) {
+  angles <- runif(n, 0, 2 * pi)  # Random angles between 0 and 2π
+  distances <- sqrt(runif(n)) * radius  # Random distances within radium km
+  # distances to degrees
+  delta_lat <- distances / 6371 * (180 / pi) #earth_radius_km <- 6371
+  delta_lon <- distances / 6371 * (180 / pi) / cos(lat * pi / 180)
+  new_lat <- lat + delta_lat * sin(angles)
+  new_lon <- lon + delta_lon * cos(angles)
+
+  data.frame(Latitude = new_lat, Longitude = new_lon)
+}
+
+coord_reassign<-function(coord_tab,coord_columns=c("Latitude", "Longitude")){
+  dup_indices <- which(duplicated(coord_tab[, coord_columns]) |
+                         duplicated(coord_tab[, coord_columns], fromLast = TRUE))
+  duplicates <- coord_tab[dup_indices, ]
+  unique_dup_coords <- unique(duplicates[, coord_columns])
+
+  # Adjust coordinates separately for each duplicate group
+  adjusted_list <- list()
+  for (i in seq_len(nrow(unique_dup_coords))) {
+    lat_i <- unique_dup_coords$Latitude[i]
+    lon_i <- unique_dup_coords$Longitude[i]
+    dup_rows <- which(coord_tab$Latitude == lat_i & coord_tab$Longitude == lon_i)
+    adjusted_coords <- coord_adjust(lat_i, lon_i, length(dup_rows))
+    adjusted_list[[i]] <- data.frame(Index = dup_rows, adjusted_coords)
+  }
+  adjusted_df <- do.call(rbind, adjusted_list)
+
+  # Assign the adjusted coordinates back to the original dataset
+  coord_tab[adjusted_df$Index, coord_columns] <- adjusted_df[, coord_columns]
+  return(coord_tab)
+}
 
 
 

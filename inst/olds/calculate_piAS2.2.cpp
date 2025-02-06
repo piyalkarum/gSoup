@@ -153,8 +153,6 @@ List calculate_pi(CharacterMatrix alignment) {
   double corrected_pi_nonsyn = jukes_cantor_correction(pi_nonsyn);
 
   return List::create(
-  	Named("tot_syn") = syn_diffs,
-  	Named("tot_nonsyn") = nonsyn_diffs,
     Named("pi_syn") = pi_syn,
     Named("pi_nonsyn") = pi_nonsyn,
     Named("corrected_pi_syn") = corrected_pi_syn,

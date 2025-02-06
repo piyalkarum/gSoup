@@ -285,3 +285,62 @@ div.stats<-function(alignment,pairwise_deletion=TRUE,pi_AS=FALSE){
   }
   return(pt)
 }
+
+
+
+#' MKT and HKA test statistics
+#'
+#' This function calculates McDonald Kreitman Test (MKT) and Hudson-Kreitman-Aguadé (HKA) Test
+#' and outputs variable sites and test significance
+#'
+#' @param dna_algn DNA sequence alignment in DNAStringSet object or path to the alignment file in FASTA format
+#' @param outgroup_name Character. Name of the outgroup sequences exactly as in the sequnece alignment
+#' @param region Numeric. Range of the alignment if the complete alignment should not be considered for the
+#' test (e.g. range=c(200-2000))
+#' @param detailed_output Logical. If \code{TRUE} a detailed output will be printed
+#'
+#' @importFrom stats chisq.test fisher.test
+#'
+#' @author Piyal Karunarathne
+#'
+#' @returns Returns a list with test statistics
+#'
+#' @export
+MKT_HKA_test<-function(dna_algn,outgroup_name,region=NULL,detailed_output=FALSE){
+  if(is.character(dna_algn)){algn<-readDNAStringSet(dna_algn)}
+  dna_matrix <- as.matrix(as.DNAbin(dna_algn))
+  if(!is.null(region)){
+    if(length(region)==2){
+      dna_matrix<-dna_matrix[,region]
+    } else {stop("provide a valid range (start,end)")}
+  }
+
+  results<-calc_mkt_hka(dna_matrix=dna_matrix,outgroup_name = outgroup_name)
+
+  polymorphic_nonsyn <- results$polymorphic_nonsyn_count
+  polymorphic_syn <- results$polymorphic_syn_count
+  fixed_nonsyn <- results$fixed_diff_nonsyn_count
+  fixed_syn <- results$fixed_diff_syn_count
+
+  # Construct contingency table
+  mkt_table <- matrix(c(polymorphic_nonsyn, polymorphic_syn,
+                        fixed_nonsyn, fixed_syn),
+                      nrow = 2, byrow = TRUE,
+                      dimnames = list(c("Polymorphic", "Fixed"), c("Nonsynonymous", "Synonymous")))
+
+  # Perform Fisher's exact test
+  mkt_fisher_test <- fisher.test(mkt_table)
+
+  # Construct HKA contingency table
+  hka_table <- matrix(c(polymorphic_syn, polymorphic_nonsyn,
+                        fixed_syn, fixed_nonsyn),
+                      nrow = 2, byrow = TRUE,
+                      dimnames = list(c("Polymorphic", "Fixed"), c("Synonymous", "Nonsynonymous")))
+
+  # Perform Chi-square test
+  hka_chisq_test <- chisq.test(hka_table)
+
+  if(detailed_output){
+    return(list(results,mkt_table,mkt_fisher_test,hka_chisq_test))
+  } else {return(list(poly_vs_fixed_counts=mkt_table,MKT_ratio=results$MKT_ratio,MKT_significance=mkt_fisher_test,HKA_statistic=results$HKA_statistic, HKA_significance=hka_chisq_test))}
+}
