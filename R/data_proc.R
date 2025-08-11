@@ -191,3 +191,84 @@ gb2sense<-function(gb_file,path=NULL,annotation=TRUE,fasta_out=NULL,annotation_o
   }
 }
 
+
+
+
+
+#' Find Blast Clusters
+#' Group blast hits for sequence search based on a predefined proximity
+#'
+#' @param data output of blast search with columns \code{sstart} and \code{send}
+#' @param max_range maximum expected length of the gene/sequence
+#'
+#'
+#' @export
+find_blast_clusters <- function(data, max_range = 4000) {
+  maxmin<-data.frame(t(apply(data,1,range)))
+  colnames(maxmin)<-c("sstart","send")
+  data<-maxmin
+  # data$sstart <- pmin(data$sstart, data$send)
+  # data$send <- pmax(data$sstart, data$send)
+  if (nrow(data) == 1) {
+    return(list(data))
+  }
+
+  data <- data[order(data$sstart), ]
+  clusters <- list()
+  current_cluster <- data[1, ]
+
+  for (i in 2:nrow(data)) {
+    current_start <- data$sstart[i]
+    current_end <- data$send[i]
+
+    cluster_start <- min(current_cluster$sstart)
+    cluster_end <- max(current_cluster$send)
+    cluster_length <- cluster_end - cluster_start
+    if (cluster_length < max_range && (current_start - cluster_start) <= max_range) {
+      combined_length <- max(cluster_end, current_end) - cluster_start
+      if (combined_length <= max_range) {
+        current_cluster <- rbind(current_cluster, data[i, ])
+      } else {
+        clusters[[length(clusters) + 1]] <- current_cluster
+        current_cluster <- data[i, ]
+      }
+    } else {
+      clusters[[length(clusters) + 1]] <- current_cluster
+      current_cluster <- data[i, ]
+    }
+  }
+  clusters[[length(clusters) + 1]] <- current_cluster
+  return(clusters)
+}
+
+
+#' Overlapping percentage of two blast hits
+#'
+#' This function will report the overlapping percentage of two blast hits.
+#' It is useful in finding removing overlapping hits, especially when multicopy
+#' regions return hits for the same gene region or wise-versa.
+#'
+#' @param start1 starting position of first hit
+#' @param end1 end position of first hit
+#' @param start2 starting position of second hit
+#' @param end2 end position of second hit
+#'
+#' @details
+#' This function is specifically useful if you have search for multiple copies of genes
+#' where same region of a genome returs hits for different copies. You can run this of a table
+#' to find overlapping hits for multiple BLAST searches.
+#'
+#' @author Piyal Karunarathne
+#'
+#' @examples
+#' \dontrun{for (j in (i + 1):nrow(df))
+#'  {if (overlap_percentage(df$start[i], df$end[i], df$start[j], df$end[j]) > 0.7)
+#'   {overlapping_rows<-c(unique(overlapping_rows),j)}}}
+#'
+#' @export
+overlap_percentage <- function(start1, end1, start2, end2) {
+  overlap_length <- max(0, min(end1, end2) - max(start1, start2))
+  min_length <- min(end1 - start1, end2 - start2)
+  if (min_length == 0) return(0)  # Avoid division by zero
+  return(overlap_length / min_length)
+}

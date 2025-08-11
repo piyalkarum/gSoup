@@ -233,6 +233,32 @@ calculate_sfs<-function(alignment){
 TajimaD <- function(sfs) {
   n <- length(sfs) + 1
   ss <- sum(sfs)
+
+  if (ss == 0) return(NA)  # No segregating sites → Tajima's D not defined
+
+  a1 <- sum(1/seq_len(n - 1))
+  a2 <- sum(1/seq_len(n - 1)^2)
+  b1 <- (n + 1)/(3 * (n - 1))
+  b2 <- 2 * (n^2 + n + 3)/(9 * n * (n - 1))
+  c1 <- b1 - 1/a1
+  c2 <- b2 - (n + 2)/(a1 * n) + a2/a1^2
+  e1 <- c1/a1
+  e2 <- c2/(a1^2 + a2)
+  Vd <- e1 * ss + e2 * ss * (ss - 1)
+
+  if (Vd == 0) return(NA)  # Avoid dividing by 0
+
+  theta_pi <- sum(2 * seq_len(n - 1) * (n - seq_len(n - 1)) * sfs)/(n * (n - 1))
+  theta_w <- ss/a1
+  res <- (theta_pi - theta_w)/sqrt(Vd)
+  return(res)
+}
+
+
+
+TajimaD0 <- function(sfs) {
+  n <- length(sfs) + 1
+  ss <- sum(sfs)
   # Harmonic sums
   a1 <- sum(1 / seq_len(n - 1))
   a2 <- sum(1 / seq_len(n - 1)^2)
@@ -329,7 +355,7 @@ MKT_HKA_test<-function(dna_algn,outgroup_name,region=NULL,detailed_output=FALSE)
                       dimnames = list(c("Polymorphic", "Fixed"), c("Nonsynonymous", "Synonymous")))
 
   # Perform Fisher's exact test
-  mkt_fisher_test <- fisher.test(mkt_table)
+  mkt_fisher_test <- fisher.test(mkt_table,alternative = "two.sided")
 
   # Construct HKA contingency table
   hka_table <- matrix(c(polymorphic_syn, polymorphic_nonsyn,

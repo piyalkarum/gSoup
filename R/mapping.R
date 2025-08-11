@@ -13,7 +13,7 @@
 #' @importFrom terra rast vect ext res extend rasterize cellFromXY ext<- res<- values
 #' @importFrom grDevices is.raster
 #'
-#' @returns Returns and extrapolated matrix
+#' @returns Returns an extrapolated matrix
 #'
 #'
 #' @author Piyal Karunarathne

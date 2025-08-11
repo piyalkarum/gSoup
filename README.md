@@ -1,5 +1,7 @@
 # gSoup <img src='inst/gSoup_logo.png' align='right' height='139' />
 
+[![DOI](https://zenodo.org/badge/856837302.svg)](https://doi.org/10.5281/zenodo.15624400)
+
 ## gSoup: An R package to perform various genetic analyses
 
 <span style="color: dodgerblue;">Piyal Karunarathne</span>

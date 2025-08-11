@@ -170,7 +170,7 @@ remove_overlap<-function(tt){
 }
 
 # Genetic code Universal
-genetic_code<-list(
+genetic_code <- list(
   "TTT" = "F", "TTC" = "F", "TTA" = "L", "TTG" = "L",
   "CTT" = "L", "CTC" = "L", "CTA" = "L", "CTG" = "L",
   "ATT" = "I", "ATC" = "I", "ATA" = "I", "ATG" = "M",
@@ -189,7 +189,7 @@ genetic_code<-list(
   "GGT" = "G", "GGC" = "G", "GGA" = "G", "GGG" = "G"
 )
 
-# function to convert codon to amino acids
+# Function to convert codon to amino acids
 codon_to_aa <- function(codon, genetic_code) {
   if (codon %in% names(genetic_code)) {
     return(genetic_code[[codon]])
@@ -198,73 +198,159 @@ codon_to_aa <- function(codon, genetic_code) {
   }
 }
 
-
-# function to calculate MKT and HKA stats
-calc_mkt_hka<-function(dna_matrix, outgroup_name){
-  #reference row
-  ref_row<-which(labels(dna_matrix)==outgroup_name)
-  if(length(ref_row)==0){stop("Outgroup name is not in the alignment")}
-  #ingroup species sequences only
-  sp1<-dna_matrix[-ref_row,]
-
-  # find all polymorphic sites
-  poly_sites<-NULL
-  for(i in 1:ncol(sp1)){
-    tm<-unique(as.character(sp1[,i]))
-    tm<-tm[grepl("^[A-Za-z]$",tm)]
-    if(length(tm)>1){poly_sites<-c(poly_sites,i)}
-  }
-
-  # sites to check for fixed differences
-  fixed_all<-setdiff(1:ncol(dna_matrix),poly_sites)
-
-  # fixed differences sites
-  fixed_diffs<-NULL
-  for(i in seq_along(fixed_all)){
-    tm<-unique(as.character(dna_matrix[,fixed_all[i]]))
-    tm<-tm[grepl("^[A-Za-z]$",tm)]
-    if(length(tm)>1){fixed_diffs<-c(fixed_diffs,fixed_all[i])}
-  }
-
-  # count polymorphic synonymous and nonsynonymous sites
-  poly_syn<-0
-  poly_nsyn<-0
-  for(i in seq_along(poly_sites)){
-    codon_start<- ((poly_sites[i]%/% 3) * 3)+1
-    tm2<-as.character(sp1[,codon_start:(codon_start+2)])
-    tm2<-paste0(tm2[,1],tm2[,2],tm2[,3])
-    tm2<-unique(tm2)
-    tm2<-toupper(tm2)
-    aas<-unique(unlist(lapply(tm2,codon_to_aa,genetic_code)))
-    aas<-aas[aas!="X"]
-    if(length(aas)==1){poly_syn<-poly_syn+1} else if(length(aas)>1){poly_nsyn<-poly_nsyn+1}
-  }
-
-  # count fixed differences synonymous and nonsynonymous sites
-  fixed_syn<-0
-  fixed_nsyn<-0
-  for(i in seq_along(fixed_diffs)){
-    codon_start<- ((fixed_diffs[i]%/% 3) * 3)+1
-    tm2<-as.character(dna_matrix[,codon_start:(codon_start+2)])
-    tm2<-paste0(tm2[,1],tm2[,2],tm2[,3])
-    tm2<-unique(tm2)
-    tm2<-toupper(tm2)
-    aas<-unique(unlist(lapply(tm2,codon_to_aa,genetic_code)))
-    aas<-aas[aas!="X"]
-    if(length(aas)==1){fixed_syn<-fixed_syn+1} else if(length(aas)>1){fixed_nsyn<-fixed_nsyn+1}
-  }
-
-  # Mcdonald kreitman ratio
-  mkt_ratio<-(poly_nsyn/poly_syn) / (fixed_nsyn/fixed_syn)
-
-  # HKA ratio
-  hka_stat<-(poly_syn/fixed_syn) - (poly_nsyn/fixed_nsyn)
-
-  return(list(polymorphic_sites=poly_sites, fixed_diff_sites=fixed_diffs, polymorphic_syn_count=poly_syn,
-              polymorphic_nonsyn_count=poly_nsyn, fixed_diff_syn_count=fixed_syn, fixed_diff_nonsyn_count=fixed_nsyn,
-              MKT_ratio=mkt_ratio,HKA_statistic=hka_stat))
+# Function to detect complex codons
+is_complex_codon <- function(codons, genetic_code) {
+  amino_acids <- unique(unlist(lapply(codons, codon_to_aa, genetic_code)))
+  amino_acids <- amino_acids[amino_acids != "X"]  # Remove unknown codons
+  return(length(amino_acids) >1)  # If more than one amino acid → Complex codon
 }
 
+# Function to calculate MKT and HKA stats
+calc_mkt_hka <- function(dna_matrix, outgroup_name) {
+  # Reference row
+  ref_row <- which(labels(dna_matrix) == outgroup_name)
+  if (length(ref_row) == 0) stop("Outgroup name is not in the alignment")
+
+  # In-group species sequences only
+  sp1 <- dna_matrix[-ref_row,]
+
+  # Find all polymorphic sites
+  poly_sites <- NULL
+  for (i in 1:ncol(sp1)) {
+    tm <- unique(as.character(sp1[, i]))
+    tm <- tm[grepl("^[A-Za-z]$", tm)]  # Only valid bases
+    if (length(tm) > 1) poly_sites <- c(poly_sites, i)
+  }
+  poly_sites<-unique(poly_sites)
+
+  # Sites to check for fixed differences
+  fixed_all <- setdiff(1:ncol(dna_matrix), poly_sites)
+
+  # Fixed differences sites
+  fixed_diffs <- NULL
+  for (i in seq_along(fixed_all)) {
+    tm <- unique(as.character(dna_matrix[, fixed_all[i]]))
+    tm <- tm[grepl("^[A-Za-z]$", tm)]
+    if (length(tm) > 1) fixed_diffs <- c(fixed_diffs, fixed_all[i])
+  }
+
+  # Count polymorphic synonymous and nonsynonymous sites
+  poly_syn <- 0
+  poly_nsyn <- 0
+  poly_syn_sites <- NULL
+  poly_nsyn_sites <- NULL
+  complex_sites <- NULL
+
+  codon_range<-0
+  for (i in seq_along(poly_sites)) {
+    # if(any(codon_range==poly_sites[i])) next
+    codon_pos<-(poly_sites[i] %/% 3) * 3
+    codon_start <- ifelse(codon_pos==poly_sites[i],codon_pos-2,codon_pos+1)
+    poss<-poly_sites[i]-codon_start+1
+    if (codon_start + 2 > ncol(sp1)) next  # Skip if incomplete codon
+    codon_range<-codon_start:(codon_start + 2)
+    tm2 <- as.character(sp1[, codon_range])
+
+    tm3 <- paste0(tm2[, 1], tm2[, 2], tm2[, 3])
+    tm3 <- unique(tm3)
+    tm3 <- toupper(tm3)
+
+    for(k in 1:3){
+      if(k!=poss){
+        tm0<-table(tm2[,k])
+        bb<-names(tm0[which.max(tm0)])
+        tm2[,k]<-bb
+      }
+    }
+
+    tm2 <- paste0(tm2[, 1], tm2[, 2], tm2[, 3])
+    tm2 <- unique(tm2)
+    tm2 <- toupper(tm2)
+
+    # Check for complex codons
+    if(length(tm3)>2){
+      if (is_complex_codon(tm3, genetic_code)) {
+        complex_sites <- c(complex_sites, poly_sites[i])
+      }
+    }
+
+    aas <- unique(unlist(lapply(tm2, codon_to_aa, genetic_code)))
+    aas <- aas[aas != "X"]
+
+    if (length(aas) == 1) {
+      poly_syn <- poly_syn + 1
+      poly_syn_sites<-c(poly_syn_sites,poly_sites[i])
+    } else if (length(aas) > 1) {
+      poly_nsyn <- poly_nsyn + 1
+      poly_nsyn_sites<-c(poly_nsyn_sites,poly_sites[i])
+    }
+  }
+
+  # Count fixed differences synonymous and nonsynonymous sites
+  fixed_diffs<-setdiff(unique(fixed_diffs),complex_sites)
+  fixed_syn <- 0
+  fixed_nsyn <- 0
+  fixed_syn_sites <- NULL
+  fixed_nsyn_sites <- NULL
+
+  codon_range<-0
+  for (i in seq_along(fixed_diffs)) {
+    # if(any(codon_range==fixed_diffs[i])) next
+    codon_pos<-(fixed_diffs[i] %/% 3) * 3
+    codon_start <- ifelse(codon_pos==fixed_diffs[i],codon_pos-2,codon_pos+1)
+    poss<-fixed_diffs[i]-codon_start+1
+    if (codon_start + 2 > ncol(dna_matrix)) next  # Skip if incomplete codon
+    codon_range<-codon_start:(codon_start + 2)
+    tm2 <- as.character(dna_matrix[, codon_range])
+
+    for(k in 1:3){
+      if(k!=poss){
+        tm0<-table(tm2[,k])
+        bb<-names(tm0[which.max(tm0)])
+        tm2[,k]<-bb
+      }
+    }
+
+    tm2 <- paste0(tm2[, 1], tm2[, 2], tm2[, 3])
+    tm2 <- unique(tm2)
+    tm2 <- toupper(tm2)
+
+    aas <- unique(unlist(lapply(tm2, codon_to_aa, genetic_code)))
+    aas <- aas[aas != "X"]
+
+    if (length(aas) == 1) {
+      fixed_syn <- fixed_syn + 1
+      fixed_syn_sites<-c(fixed_syn_sites,fixed_diffs[i])
+    } else if (length(aas) > 1) {
+      fixed_nsyn <- fixed_nsyn + 1
+      fixed_nsyn_sites<-c(fixed_nsyn_sites,fixed_diffs[i])
+    }
+  }
+
+  if(length(complex_sites)>0){warning("Complex codons exists: check for contingency")}
+
+  # McDonald-Kreitman Ratio
+  mkt_ratio <- ifelse(poly_syn > 0 & poly_nsyn > 0 & fixed_syn > 0 & fixed_nsyn > 0,
+                      (poly_nsyn / poly_syn) / (fixed_nsyn / fixed_syn),
+                      NA)
+
+  # HKA Ratio
+  hka_stat <- ifelse(fixed_syn > 0 & fixed_nsyn > 0,
+                     (poly_syn / fixed_syn) - (poly_nsyn / fixed_nsyn),
+                     NA)
+
+  return(list(
+    polymorphic_sites = poly_sites,
+    fixed_diff_sites = fixed_diffs,
+    complex_sites = complex_sites,
+    polymorphic_syn_count = poly_syn,
+    polymorphic_nonsyn_count = poly_nsyn,
+    fixed_diff_syn_count = fixed_syn,
+    fixed_diff_nonsyn_count = fixed_nsyn,
+    MKT_ratio = mkt_ratio,
+    HKA_statistic = hka_stat
+  ))
+}
 
 
 

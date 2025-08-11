@@ -16,7 +16,7 @@ win_extrapol(spat, window = 50, width = 3, show_progress = TRUE)
 \item{show_progress}{Logical. Whether to show the progress bar}
 }
 \value{
-Returns and extrapolated matrix
+Returns an extrapolated matrix
 }
 \description{
 This function extrapolates maps using a given window size to given extents
